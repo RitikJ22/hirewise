@@ -112,7 +112,7 @@ export const CandidateGrid = () => {
 
   const handleRefresh = () => {
     fetchCandidates(1, true);
-    Toast.info("Refreshing candidates", "Loading the latest candidate data...");
+    Toast.loading("Refreshing candidates", "Loading the latest candidate data...");
   };
 
   const getActiveFilters = () => {

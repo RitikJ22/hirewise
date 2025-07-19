@@ -38,7 +38,7 @@ export const ShortlistPanel = () => {
     candidateName: string
   ) => {
     removeCandidate(candidateEmail);
-    Toast.success(
+    Toast.remove(
       "Candidate removed",
       `${candidateName} has been removed from your shortlist.`
     );
@@ -46,12 +46,12 @@ export const ShortlistPanel = () => {
 
   const handleClearShortlist = () => {
     if (shortlistedCandidates.length === 0) {
-      Toast.info("Shortlist is already empty", "No candidates to remove.");
+      Toast.loading("Shortlist is already empty", "No candidates to remove.");
       return;
     }
 
     clearShortlist();
-    Toast.success(
+    Toast.remove(
       "Shortlist cleared",
       `All ${shortlistedCandidates.length} candidates have been removed from your shortlist.`
     );

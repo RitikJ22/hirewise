@@ -42,7 +42,7 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
     }
 
     if (isShortlisted) {
-      Toast.info(
+      Toast.loading(
         "Candidate already in shortlist",
         `${candidate.name} is already in your shortlist.`
       );
@@ -58,7 +58,7 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
 
   const handleRemoveFromShortlist = () => {
     removeCandidate(candidate.email);
-    Toast.success(
+    Toast.remove(
       "Candidate removed",
       `${candidate.name} has been removed from your shortlist.`
     );
