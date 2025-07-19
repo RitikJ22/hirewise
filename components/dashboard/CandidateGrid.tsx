@@ -218,11 +218,11 @@ export const CandidateGrid = () => {
   }
 
   return (
-    <div className="flex flex-col h-full px-5 pt-6 pb-4">
+    <div className="flex flex-col h-full pt-6 pb-4">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0 space-y-4 pb-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-5">
           <div className="flex items-center space-x-2">
             <Users className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold text-foreground">

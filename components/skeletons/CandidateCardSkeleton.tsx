@@ -9,7 +9,7 @@ export const CandidateCardSkeleton = () => {
       transition={{ duration: 0.3 }}
       className="w-full p-2"
     >
-      <Card className="bg-card border-border h-[240px] flex flex-col">
+      <Card className="bg-card border-border h-[240px] flex flex-col mx-5">
         <CardHeader className="pb-3 flex-shrink-0">
           <div className="flex items-start justify-between">
             <div className="space-y-2 min-w-0 flex-1">
@@ -29,7 +29,7 @@ export const CandidateCardSkeleton = () => {
             {/* Always Visible Info - Single Row */}
             <div className="flex gap-4 flex-shrink-0">
               {/* Left Side - Basic Info */}
-              <div className="w-56 space-y-3">
+              <div className="w-64 space-y-3">
                 {/* Location and Availability */}
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-1">

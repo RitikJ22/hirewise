@@ -169,7 +169,7 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
       className="w-full p-2"
     >
       <Card
-        className={`bg-card border-border transition-all duration-300 ${
+        className={`bg-card border-border transition-all duration-300 mx-5 ${
           isExpanded ? "h-[350px]" : "h-[240px]"
         } flex flex-col cursor-pointer ${
           isShortlisted ? "border-primary" : "hover:border-border/80"
@@ -246,7 +246,7 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
             {/* Always Visible Info - Single Row */}
             <div className="flex gap-4 flex-shrink-0">
               {/* Left Side - Basic Info */}
-              <div className="w-56 space-y-3">
+              <div className="w-64 space-y-3">
                 {/* Location and Availability */}
                 <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                   <div className="flex items-center space-x-1">
