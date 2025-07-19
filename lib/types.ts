@@ -32,11 +32,14 @@ export interface Candidate {
 
 export interface FilterState {
   skills: string;
-  minExp: number;
-  maxExp: number;
+  workAvailability: string[];
   minSalary: number;
   maxSalary: number;
-  topSchool: boolean;
+  location: string;
+  roleName: string;
+  company: string;
+  educationLevel: string;
+  degreeSubject: string;
   sortBy: string;
   page: number;
   limit: number;
@@ -45,4 +48,7 @@ export interface FilterState {
 export interface ApiResponse {
   candidates: Candidate[];
   hasMore: boolean;
+  total: number;
+  page: number;
+  limit: number;
 } 

@@ -13,31 +13,40 @@ import { CandidateCard } from "./CandidateCard";
 import { BackToTop } from "@/components/ui/back-to-top";
 
 export const CandidateGrid = () => {
-  const { filters } = useAppStore();
+  const { filters, isFilterApplied } = useAppStore();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
 
   const fetchCandidates = useCallback(
     async (pageNum: number, reset: boolean = false) => {
       try {
-        setLoading(true);
+        if (reset) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
         setError(null);
 
         const queryParams = new URLSearchParams({
           skills: filters.skills,
-          minExp: filters.minExp.toString(),
-          maxExp: filters.maxExp.toString(),
+          workAvailability: filters.workAvailability.join(","),
           minSalary: filters.minSalary.toString(),
           maxSalary: filters.maxSalary.toString(),
-          topSchool: filters.topSchool.toString(),
+          location: filters.location,
+          roleName: filters.roleName,
+          company: filters.company,
+          educationLevel: filters.educationLevel,
+          degreeSubject: filters.degreeSubject,
           sortBy: filters.sortBy,
           page: pageNum.toString(),
-          limit: "4", // Show 4 candidates per page (2x2 grid)
+          limit: "10", // Show 10 candidates per page
         });
 
         const response = await fetch(`/api/candidates?${queryParams}`);
@@ -50,10 +59,7 @@ export const CandidateGrid = () => {
 
         if (reset) {
           setCandidates(data.candidates);
-          Toast.success(
-            "Candidates loaded",
-            `Found ${data.candidates.length} candidates matching your criteria.`
-          );
+          setTotal(data.total);
         } else {
           setCandidates((prev) => [...prev, ...data.candidates]);
         }
@@ -70,31 +76,34 @@ export const CandidateGrid = () => {
         );
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     },
-    [filters]
+    [filters, isFilterApplied]
   );
 
   useEffect(() => {
     setPage(1);
+    setCandidates([]);
+    setTotal(0);
     fetchCandidates(1, true);
   }, [filters, fetchCandidates]);
 
   const lastElementRef = useCallback(
     (node: HTMLDivElement) => {
-      if (loading) return;
+      if (loading || loadingMore) return;
 
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
           fetchCandidates(page + 1);
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore, page, fetchCandidates]
+    [loading, loadingMore, hasMore, page, fetchCandidates]
   );
 
   const handleRetry = () => {
@@ -135,10 +144,17 @@ export const CandidateGrid = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Users className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold text-foreground">Candidates</h2>
-          {candidates.length > 0 && (
+          <h2 className="text-xl font-semibold text-foreground">
+            {isFilterApplied ? "Filtered Candidates" : "All Candidates"}
+          </h2>
+          {total > 0 && (
             <span className="text-sm text-muted-foreground">
-              ({candidates.length} found)
+              ({candidates.length} of {total} shown)
+            </span>
+          )}
+          {isFilterApplied && (
+            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+              Filter Applied
             </span>
           )}
         </div>
@@ -182,7 +198,7 @@ export const CandidateGrid = () => {
             <AnimatePresence>
               {candidates.map((candidate, index) => (
                 <motion.div
-                  key={`${candidate.name}-${candidate.email}`}
+                  key={`${candidate.name}-${candidate.email}-${candidate.phone}-${index}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -195,6 +211,22 @@ export const CandidateGrid = () => {
                 </motion.div>
               ))}
             </AnimatePresence>
+
+            {/* Loading More Spinner */}
+            {loadingMore && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="col-span-2 flex justify-center py-8"
+              >
+                <div className="flex items-center space-x-2">
+                  <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">
+                    Loading more candidates...
+                  </span>
+                </div>
+              </motion.div>
+            )}
 
             {/* Loading Skeleton */}
             {loading && (

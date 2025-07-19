@@ -21,8 +21,12 @@ interface CandidateCardProps {
 }
 
 export const CandidateCard = ({ candidate }: CandidateCardProps) => {
-  const { addCandidate, removeCandidate, shortlistedCandidates } =
-    useAppStore();
+  const {
+    addCandidate,
+    removeCandidate,
+    shortlistedCandidates,
+    isFilterApplied,
+  } = useAppStore();
   const isShortlisted = shortlistedCandidates.some(
     (c) => c.email === candidate.email
   );
@@ -61,6 +65,9 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
   };
 
   const formatSalary = (salary: number) => {
+    if (!salary || isNaN(salary)) {
+      return "$0";
+    }
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -137,25 +144,32 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
             <div className="flex items-center space-x-3 text-sm text-muted-foreground">
               <div className="flex items-center space-x-1">
                 <MapPin className="h-3 w-3" />
-                <span className="truncate">{candidate.location}</span>
+                <span className="truncate">
+                  {candidate.location || "Unknown"}
+                </span>
               </div>
               <div className="flex items-center space-x-1">
                 <Briefcase className="h-3 w-3" />
                 <span className="truncate">
-                  {candidate.work_availability[0]}
+                  {candidate.work_availability?.[0] || "Unknown"}
                 </span>
               </div>
             </div>
 
-            {/* Match Score */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                Match Score
-              </span>
-              <Badge variant="secondary" className="bg-primary/20 text-primary">
-                {candidate.matchScore || 0}%
-              </Badge>
-            </div>
+            {/* Match Score - Only show when filters are applied */}
+            {isFilterApplied && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  Match Score
+                </span>
+                <Badge
+                  variant="secondary"
+                  className="bg-primary/20 text-primary"
+                >
+                  {candidate.matchScore || 0}%
+                </Badge>
+              </div>
+            )}
           </div>
 
           {/* Content section */}
@@ -169,17 +183,20 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
                 </span>
               </div>
               <div className="pl-5 space-y-1">
-                {candidate.work_experiences.slice(0, 2).map((exp, index) => (
+                {candidate.work_experiences?.slice(0, 2).map((exp, index) => (
                   <div key={index} className="text-xs text-muted-foreground">
-                    <span className="font-medium">{exp.roleName}</span> at{" "}
-                    {exp.company}
+                    <span className="font-medium">
+                      {exp.roleName || "Unknown Role"}
+                    </span>{" "}
+                    at {exp.company || "Unknown Company"}
                   </div>
                 ))}
-                {candidate.work_experiences.length > 2 && (
-                  <div className="text-xs text-muted-foreground">
-                    +{candidate.work_experiences.length - 2} more
-                  </div>
-                )}
+                {candidate.work_experiences &&
+                  candidate.work_experiences.length > 2 && (
+                    <div className="text-xs text-muted-foreground">
+                      +{candidate.work_experiences.length - 2} more
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -197,11 +214,12 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
                 )}
               </div>
               <div className="pl-5 space-y-1">
-                {candidate.education.degrees
-                  .slice(0, 1)
+                {candidate.education?.degrees
+                  ?.slice(0, 1)
                   .map((degree, index) => (
                     <div key={index} className="text-xs text-muted-foreground">
-                      {degree.degree} in {degree.subject}
+                      {degree.degree || "Unknown Degree"} in{" "}
+                      {degree.subject || "Unknown Subject"}
                     </div>
                   ))}
               </div>
@@ -224,12 +242,12 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
                 Skills
               </span>
               <div className="flex flex-wrap gap-1">
-                {candidate.skills.slice(0, 3).map((skill, index) => (
+                {candidate.skills?.slice(0, 3).map((skill, index) => (
                   <Badge key={index} variant="outline" className="text-xs">
                     {skill}
                   </Badge>
                 ))}
-                {candidate.skills.length > 3 && (
+                {candidate.skills && candidate.skills.length > 3 && (
                   <Badge variant="outline" className="text-xs">
                     +{candidate.skills.length - 3}
                   </Badge>

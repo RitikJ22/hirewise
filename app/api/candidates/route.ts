@@ -36,14 +36,30 @@ function calculateMatchScore(candidate: Candidate, skillsFilter: string): number
 }
 
 // Helper function to parse salary
-function parseSalary(salaryObj: { [key: string]: string }): number {
-  // Try to get the full-time salary first, then fall back to any available salary
-  const salaryStr = salaryObj['full-time'] || Object.values(salaryObj)[0] || '';
-  const match = salaryStr.match(/[\d,]+/);
-  if (match) {
-    return parseInt(match[0].replace(/,/g, ''), 10);
+function parseSalary(salaryObj: { [key: string]: string } | null | undefined): number {
+  try {
+    // Handle null/undefined cases
+    if (!salaryObj || typeof salaryObj !== 'object') {
+      return 0;
+    }
+    
+    // Try to get the full-time salary first, then fall back to any available salary
+    const salaryStr = salaryObj['full-time'] || Object.values(salaryObj)[0] || '';
+    
+    // Handle cases where salaryStr might be undefined or not a string
+    if (!salaryStr || typeof salaryStr !== 'string') {
+      return 0;
+    }
+    
+    const match = salaryStr.match(/[\d,]+/);
+    if (match) {
+      return parseInt(match[0].replace(/,/g, ''), 10);
+    }
+    return 0;
+  } catch (error) {
+    console.error('Error parsing salary:', error, salaryObj);
+    return 0;
   }
-  return 0;
 }
 
 export async function GET(request: NextRequest) {
@@ -52,11 +68,15 @@ export async function GET(request: NextRequest) {
     
     // Extract query parameters
     const skills = searchParams.get('skills') || '';
-    const minExp = parseInt(searchParams.get('minExp') || '0', 10);
-    const maxExp = parseInt(searchParams.get('maxExp') || '20', 10);
-    const minSalary = parseInt(searchParams.get('minSalary') || '0', 10);
-    const maxSalary = parseInt(searchParams.get('maxSalary') || '500000', 10);
-    const topSchool = searchParams.get('topSchool') === 'true';
+    const workAvailabilityParam = searchParams.get('workAvailability') || '';
+    const workAvailability = workAvailabilityParam ? workAvailabilityParam.split(',') : [];
+    const minSalary = parseInt(searchParams.get('minSalary') || '45000', 10);
+    const maxSalary = parseInt(searchParams.get('maxSalary') || '150000', 10);
+    const location = searchParams.get('location') || '';
+    const roleName = searchParams.get('roleName') || '';
+    const company = searchParams.get('company') || '';
+    const educationLevel = searchParams.get('educationLevel') || '';
+    const degreeSubject = searchParams.get('degreeSubject') || '';
     const sortBy = searchParams.get('sortBy') || 'matchScore';
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '20', 10);
@@ -68,69 +88,153 @@ export async function GET(request: NextRequest) {
     
     // Process candidates and add computed properties
     const processedCandidates = candidates.map(candidate => {
-      const experienceProxy = candidate.work_experiences.length;
-      const salaryNumeric = parseSalary(candidate.annual_salary_expectation);
-      const isTopSchool = candidate.education.degrees.some(
-        degree => degree.isTop50 || degree.isTop25
-      );
-      const matchScore = calculateMatchScore(candidate, skills);
-      
-      return {
-        ...candidate,
-        experienceProxy,
-        salaryNumeric,
-        isTopSchool,
-        matchScore,
-      };
+      try {
+        const experienceProxy = candidate.work_experiences?.length || 0;
+        const salaryNumeric = parseSalary(candidate.annual_salary_expectation);
+        const isTopSchool = candidate.education?.degrees?.some(
+          degree => degree.isTop50 || degree.isTop25
+        ) || false;
+        
+        // Only calculate match score if skills filter is applied
+        const matchScore = skills ? calculateMatchScore(candidate, skills) : undefined;
+        
+        return {
+          ...candidate,
+          experienceProxy,
+          salaryNumeric,
+          isTopSchool,
+          matchScore,
+        };
+      } catch (error) {
+        console.error('Error processing candidate:', error, candidate);
+        // Return a safe fallback candidate
+        return {
+          ...candidate,
+          experienceProxy: 0,
+          salaryNumeric: 0,
+          isTopSchool: false,
+          matchScore: undefined,
+        };
+      }
     });
     
-    // Apply filters
-    const filteredCandidates = processedCandidates.filter(candidate => {
-      // Experience filter
-      if (candidate.experienceProxy < minExp || candidate.experienceProxy > maxExp) {
-        return false;
-      }
-      
-      // Salary filter
-      if (candidate.salaryNumeric < minSalary || candidate.salaryNumeric > maxSalary) {
-        return false;
-      }
-      
-      // Top school filter
-      if (topSchool && !candidate.isTopSchool) {
-        return false;
-      }
-      
-      // Skills filter
-      if (skills) {
-        const requiredSkills = skills.toLowerCase().split(',').map(s => s.trim());
-        const candidateSkills = candidate.skills.map(s => s.toLowerCase());
-        const hasRequiredSkills = requiredSkills.some(skill =>
-          candidateSkills.some(candidateSkill => candidateSkill.includes(skill))
-        );
-        if (!hasRequiredSkills) {
+    // Check if any filters are applied (excluding default salary range)
+    const hasFilters = skills || workAvailability.length > 0 || 
+                      location || roleName || company || 
+                      (educationLevel && educationLevel !== 'all') || degreeSubject;
+    
+        // Always apply salary filtering, then apply other filters if any are set
+    let filteredCandidates = processedCandidates.filter(candidate => {
+      try {
+        // Always apply salary filter
+        if (candidate.salaryNumeric < minSalary || candidate.salaryNumeric > maxSalary) {
           return false;
         }
+        return true;
+      } catch (error) {
+        console.error('Error applying salary filter:', error, candidate);
+        return false;
       }
-      
-      return true;
     });
+
+    // Apply additional filters only if any are set
+    if (hasFilters) {
+      filteredCandidates = filteredCandidates.filter(candidate => {
+        try {
+          // Work availability filter
+          if (workAvailability.length > 0) {
+            const hasMatchingAvailability = workAvailability.some(availability =>
+              candidate.work_availability?.includes(availability)
+            );
+            if (!hasMatchingAvailability) {
+              return false;
+            }
+          }
+          
+          // Location filter
+          if (location && !candidate.location?.toLowerCase().includes(location.toLowerCase())) {
+            return false;
+          }
+          
+          // Role name filter
+          if (roleName) {
+            const hasMatchingRole = candidate.work_experiences?.some(exp =>
+              exp.roleName?.toLowerCase().includes(roleName.toLowerCase())
+            );
+            if (!hasMatchingRole) {
+              return false;
+            }
+          }
+          
+          // Company filter
+          if (company) {
+            const hasMatchingCompany = candidate.work_experiences?.some(exp =>
+              exp.company?.toLowerCase().includes(company.toLowerCase())
+            );
+            if (!hasMatchingCompany) {
+              return false;
+            }
+          }
+          
+          // Education level filter
+          if (educationLevel && educationLevel !== 'all' && candidate.education?.highest_level !== educationLevel) {
+            return false;
+          }
+          
+          // Degree subject filter
+          if (degreeSubject) {
+            const hasMatchingDegree = candidate.education?.degrees?.some(degree =>
+              degree.subject?.toLowerCase().includes(degreeSubject.toLowerCase())
+            );
+            if (!hasMatchingDegree) {
+              return false;
+            }
+          }
+          
+          // Skills filter
+          if (skills) {
+            const requiredSkills = skills.toLowerCase().split(',').map(s => s.trim());
+            const candidateSkills = candidate.skills?.map(s => s.toLowerCase()) || [];
+            const hasRequiredSkills = requiredSkills.some(skill =>
+              candidateSkills.some(candidateSkill => candidateSkill.includes(skill))
+            );
+            if (!hasRequiredSkills) {
+              return false;
+            }
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Error filtering candidate:', error, candidate);
+          return false; // Exclude problematic candidates
+        }
+      });
+    }
     
     // Apply sorting
     filteredCandidates.sort((a, b) => {
-      switch (sortBy) {
-        case 'matchScore':
-          return (b.matchScore || 0) - (a.matchScore || 0);
-        case 'date':
-          return new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime();
-        case 'experience':
-          return (b.experienceProxy || 0) - (a.experienceProxy || 0);
-        case 'salary':
-          return (b.salaryNumeric || 0) - (a.salaryNumeric || 0);
-        case 'name':
-          return a.name.localeCompare(b.name);
-        default:
-          return 0;
+      try {
+        switch (sortBy) {
+          case 'matchScore':
+            return (b.matchScore || 0) - (a.matchScore || 0);
+          case 'date':
+            return new Date(b.submitted_at || 0).getTime() - new Date(a.submitted_at || 0).getTime();
+          case 'salary':
+            return (b.salaryNumeric || 0) - (a.salaryNumeric || 0);
+          case 'name':
+            return (a.name || '').localeCompare(b.name || '');
+          case 'location':
+            return (a.location || '').localeCompare(b.location || '');
+          case 'education':
+            return (a.education?.highest_level || '').localeCompare(b.education?.highest_level || '');
+          case 'experience':
+            return (b.work_experiences?.length || 0) - (a.work_experiences?.length || 0);
+          default:
+            return 0;
+        }
+      } catch (error) {
+        console.error('Error sorting candidates:', error);
+        return 0;
       }
     });
     
@@ -143,6 +247,9 @@ export async function GET(request: NextRequest) {
     const response: ApiResponse = {
       candidates: paginatedCandidates,
       hasMore,
+      total: filteredCandidates.length,
+      page,
+      limit,
     };
     
     return NextResponse.json(response);

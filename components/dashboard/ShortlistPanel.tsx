@@ -107,7 +107,7 @@ export const ShortlistPanel = () => {
               <AnimatePresence>
                 {shortlistedCandidates.map((candidate, index) => (
                   <motion.div
-                    key={`${candidate.name}-${candidate.email}`}
+                    key={`${candidate.name}-${candidate.email}-${candidate.phone}-${index}`}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
