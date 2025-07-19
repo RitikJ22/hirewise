@@ -53,7 +53,7 @@ export const ShortlistPanel = () => {
     clearShortlist();
     Toast.remove(
       "Shortlist cleared",
-      `All ${shortlistedCandidates.length} candidates have been removed from your shortlist.`
+      `All candidates have been removed from your shortlist.`
     );
   };
 
