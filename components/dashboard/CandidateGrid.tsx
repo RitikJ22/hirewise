@@ -9,7 +9,6 @@ import { RefreshCw, AlertCircle, Users, X } from "lucide-react";
 import { Toast } from "@/lib/toast";
 import { CandidateCard } from "./CandidateCard";
 import { CandidateCardSkeleton } from "@/components/skeletons/CandidateCardSkeleton";
-import { BackToTop } from "@/components/ui/back-to-top";
 
 export const CandidateGrid = () => {
   const { filters, isFilterApplied } = useAppStore();
@@ -220,8 +219,6 @@ export const CandidateGrid = () => {
 
   return (
     <div className="flex flex-col h-full px-5 pt-6 pb-4">
-      <BackToTop />
-
       {/* Fixed Header Section */}
       <div className="flex-shrink-0 space-y-4 pb-4">
         {/* Header */}
@@ -339,7 +336,7 @@ export const CandidateGrid = () => {
       {/* Fixed Bottom Pagination */}
       {totalPages > 1 && candidates.length > 0 && (
         <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border">
-          <div className="flex items-center justify-between py-5 px-6">
+          <div className="flex items-center justify-between pt-5 px-6">
             <div className="text-sm text-muted-foreground">
               Page {currentPage} of {totalPages} • {total} total candidates
             </div>

@@ -5,6 +5,7 @@ interface AppState {
   filters: FilterState;
   shortlistedCandidates: Candidate[];
   isFilterApplied: boolean;
+  showTeamModal: boolean;
   setFilters: (newFilters: Partial<FilterState>) => void;
   applyFilters: () => void;
   clearFilters: () => void;
@@ -12,6 +13,8 @@ interface AppState {
   removeCandidate: (candidateName: string) => void;
   clearShortlist: () => void;
   hasFilterChanges: () => boolean;
+  openTeamModal: () => void;
+  closeTeamModal: () => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -31,6 +34,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   shortlistedCandidates: [],
   isFilterApplied: false,
+  showTeamModal: false,
   setFilters: (newFilters) =>
     set((state) => {
       const updatedFilters = { ...state.filters, ...newFilters, page: 1 };
@@ -104,4 +108,6 @@ export const useAppStore = create<AppState>((set, get) => ({
            state.filters.educationLevel !== 'all' ||
            state.filters.degreeSubject !== '';
   },
+  openTeamModal: () => set({ showTeamModal: true }),
+  closeTeamModal: () => set({ showTeamModal: false }),
 })); 

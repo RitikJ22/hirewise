@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/store";
 import TeamAnalytics from "./TeamAnalytics";
-import { X, Users, Trash2 } from "lucide-react";
+import { X, Users, Trash2, MapPin, User } from "lucide-react";
 import { Toast } from "@/lib/toast";
 
 export const ShortlistPanel = () => {
@@ -53,7 +53,7 @@ export const ShortlistPanel = () => {
     clearShortlist();
     Toast.remove(
       "Shortlist cleared",
-      `All ${shortlistedCandidates.length} candidates have been removed from your shortlist.`
+      `All candidates have been removed from your shortlist.`
     );
   };
 
@@ -133,6 +133,7 @@ export const ShortlistPanel = () => {
                         <div className="flex items-start justify-between">
                           <div className="space-y-2 flex-1 min-w-0">
                             <div className="flex items-center space-x-2">
+                              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                               <h4 className="font-medium text-foreground truncate">
                                 {candidate.name}
                               </h4>
@@ -150,14 +151,12 @@ export const ShortlistPanel = () => {
                               {candidate.email}
                             </p>
                             <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                              <span className="truncate">
-                                {candidate.location}
-                              </span>
+                              <div className="flex items-center space-x-1 truncate">
+                                <MapPin className="h-3 w-3 flex-shrink-0" />
+                                <span>{candidate.location}</span>
+                              </div>
                               <span className="flex-shrink-0">
                                 {formatSalary(candidate.salaryNumeric || 0)}
-                              </span>
-                              <span className="flex-shrink-0">
-                                {candidate.experienceProxy || 0} years exp
                               </span>
                             </div>
                           </div>
@@ -190,14 +189,32 @@ export const ShortlistPanel = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-primary/10 border border-primary/20 rounded-lg p-3"
+            className={`rounded-lg p-3 ${
+              shortlistedCandidates.length === 5
+                ? "bg-green-500/10 border border-green-500/20"
+                : "bg-primary/10 border border-primary/20"
+            }`}
           >
-            <p className="text-sm text-primary font-medium">
-              Maximum 5 candidates selected
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Remove a candidate to add a new one
-            </p>
+            {shortlistedCandidates.length === 5 ? (
+              <>
+                <p className="text-sm text-green-600 font-medium">
+                  🎉 Your dream team is complete!
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use the Export PDF button in the header to download your team
+                  data
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-primary font-medium">
+                  Maximum 5 candidates selected
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Remove a candidate to add a new one
+                </p>
+              </>
+            )}
           </motion.div>
         )}
       </div>

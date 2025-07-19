@@ -1,17 +1,41 @@
 # HireWise Co-pilot
 
-A highly polished, single-page application to help users filter, sort, score, and select the top 5 candidates from a large JSON dataset. Built with Next.js 15, TypeScript, Tailwind CSS, and Shadcn/UI.
+A comprehensive AI-powered candidate filtering and selection platform designed to help recruiters build diverse teams of 5 candidates. Built with Next.js 15, TypeScript, Tailwind CSS, and Shadcn/UI.
 
-## 🚀 Features
+## 🎯 Problem Statement
 
-- **Advanced Filtering**: Filter candidates by skills, experience range, salary expectations, and education
-- **Smart Sorting**: Sort by match score, date applied, experience, salary, or name
-- **Infinite Scroll**: Seamless pagination with intersection observer API
-- **Real-time Analytics**: Team analytics with average salary, experience, and skill distribution
-- **Shortlist Management**: Select up to 5 candidates with drag-and-drop functionality
-- **Match Scoring**: AI-powered scoring algorithm based on skills, experience, and education
+Create a full-stack application to help recruiters figure out who to hire. The platform enables users to:
+- Filter through a large dataset of candidate submissions
+- Select a diverse team of 5 people to hire
+- Communicate why they were chosen through detailed reports
+- Export team data for stakeholder presentations
+
+## 🚀 Core Features
+
+### 🎯 **Smart Candidate Filtering**
+- **Multi-criteria Filters**: Skills, work availability, location, role name, company, education level, degree subject
+- **Salary Range Filtering**: Dynamic salary range with real-time updates
+- **Advanced Sorting**: Match score, date applied, salary, name, location, education, experience, top schools
+- **Real-time Search**: Instant filtering with debounced input handling
+
+### 👥 **Team Building & Analytics**
+- **5-Candidate Selection**: Maximum team size with intelligent validation
+- **Real-time Team Analytics**: Average salary, experience, geographic diversity, top school graduates
+- **Skills Distribution**: Top skills analysis across the selected team
+- **Match Score Tracking**: AI-powered scoring when filters are applied
+
+### 📊 **Comprehensive Reporting**
+- **Team Selection Modal**: Automatic modal when 5 candidates are selected
+- **Email Export**: Pre-filled email client with complete team report
+- **PDF Download**: Comprehensive hiring report with all candidate details
+- **Professional Formatting**: Clean, shareable reports for stakeholders
+
+### 🎨 **Enhanced User Experience**
 - **Responsive Design**: Beautiful dark theme with smooth animations
-- **Type Safety**: Full TypeScript implementation with strict type checking
+- **Interactive Cards**: Expandable candidate cards with hover effects
+- **Visual Icons**: Location pins, user icons, and intuitive UI elements
+- **Smart Notifications**: Toast notifications for all user actions
+- **Loading States**: Shimmer skeletons and loading indicators
 
 ## 🛠️ Tech Stack
 
@@ -22,6 +46,8 @@ A highly polished, single-page application to help users filter, sort, score, an
 - **Animations**: Framer Motion
 - **State Management**: Zustand
 - **Icons**: Lucide React
+- **Email Integration**: Mailto protocol
+- **File Export**: Blob-based PDF simulation
 
 ## 📦 Installation
 
@@ -56,14 +82,19 @@ hirewise/
 ├── components/
 │   ├── dashboard/
 │   │   ├── CandidateCard.tsx     # Individual candidate display
-│   │   ├── CandidateGrid.tsx     # Infinite scroll candidate list
+│   │   ├── CandidateGrid.tsx     # Paginated candidate list
 │   │   ├── FilterPanel.tsx       # Filter controls
 │   │   ├── ShortlistPanel.tsx    # Selected candidates panel
-│   │   └── TeamAnalytics.tsx     # Team statistics
+│   │   ├── TeamAnalytics.tsx     # Team statistics
+│   │   └── TeamSelectionModal.tsx # Team export modal
+│   ├── layout/
+│   │   └── Header.tsx            # Application header with export
+│   ├── skeletons/                # Loading skeleton components
 │   └── ui/                       # Shadcn/UI components
 ├── lib/
 │   ├── store.ts                  # Zustand state management
 │   ├── types.ts                  # TypeScript interfaces
+│   ├── toast.tsx                 # Toast notification system
 │   └── utils.ts                  # Utility functions
 └── public/
     └── form-submissions.json     # Sample candidate data
@@ -87,16 +118,19 @@ hirewise/
 
 ### GET /api/candidates
 
-Fetches and filters candidate data with computed properties.
+Fetches and filters candidate data with computed properties and match scoring.
 
 **Query Parameters:**
 - `skills` (string): Comma-separated skills to filter by
-- `minExp` (number): Minimum years of experience
-- `maxExp` (number): Maximum years of experience
+- `workAvailability` (string): Comma-separated availability options
+- `location` (string): Location filter
+- `roleName` (string): Role name filter
+- `company` (string): Company filter
+- `educationLevel` (string): Education level filter
+- `degreeSubject` (string): Degree subject filter
 - `minSalary` (number): Minimum salary expectation
 - `maxSalary` (number): Maximum salary expectation
-- `topSchool` (boolean): Filter for top 50 schools only
-- `sortBy` (string): Sort field (matchScore, date, experience, salary, name)
+- `sortBy` (string): Sort field (matchScore, date, salary, name, location, education, experience, topSchools)
 - `page` (number): Page number for pagination
 - `limit` (number): Number of results per page
 
@@ -104,45 +138,79 @@ Fetches and filters candidate data with computed properties.
 ```json
 {
   "candidates": [...],
-  "hasMore": boolean
+  "hasMore": boolean,
+  "total": number,
+  "page": number,
+  "limit": number
 }
 ```
 
 ## 🧮 Match Scoring Algorithm
 
-The match score is calculated based on:
-- **Skills Match (50%)**: Percentage of required skills found in candidate's skillset
-- **Experience Score (25%)**: Years of experience (capped at 10 years)
-- **Education Score (15%)**: Bonus for top 50/25 schools
-- **Salary Competitiveness (10%)**: Proximity to average market salary
+The match score is calculated based on applied filters:
+- **Skills Match (30%)**: Percentage of required skills found in candidate's skillset
+- **Work Availability (20%)**: Match with desired work schedule
+- **Location Match (15%)**: Geographic proximity or location match
+- **Role Name Match (15%)**: Previous role experience relevance
+- **Company Match (10%)**: Previous company experience relevance
+- **Education Level (5%)**: Educational qualification match
+- **Degree Subject (5%)**: Academic background relevance
 
-## 🎯 Key Features
+## 🎯 Complete Workflow
+
+### 1. **Candidate Discovery**
+- Browse through paginated candidate list
+- Use advanced filters to narrow down candidates
+- View detailed candidate information with expandable cards
+- See real-time match scores when filters are applied
+
+### 2. **Team Building**
+- Add candidates to shortlist (maximum 5)
+- View real-time team analytics as you build
+- See geographic diversity, salary ranges, and skill distribution
+- Remove candidates with one-click functionality
+
+### 3. **Team Completion**
+- Automatic modal opens when 5 candidates are selected
+- Review your complete hiring team
+- Export team data via email or PDF download
+- Share professional reports with stakeholders
+
+### 4. **Export Options**
+- **Email Export**: Opens default email client with pre-filled team report
+- **PDF Download**: Comprehensive text report with all candidate details
+- **Professional Formatting**: Ready-to-share reports for presentations
+
+## 🎨 Key UI Components
+
+### Header
+- Full-width design with logo and export button
+- Smart export button (enabled only when 5 candidates selected)
+- Professional branding and navigation
 
 ### Filter Panel
-- Skills input with comma-separated values
-- Experience range slider (0-20 years)
-- Salary range slider ($0-$500k)
-- Top school filter toggle
-- Sort options dropdown
+- Comprehensive filtering options
+- Real-time filter application
+- Sort options with multiple criteria
+- Clear filters functionality
 
 ### Candidate Grid
-- Infinite scroll with intersection observer
-- Real-time filtering and sorting
-- Loading states and error handling
-- Responsive card layout
+- Paginated display with loading states
+- Expandable candidate cards with hover effects
+- Visual icons for location, work availability, and user info
+- Add/remove from shortlist functionality
 
 ### Shortlist Panel
-- Maximum 5 candidates selection
 - Real-time team analytics
-- Individual candidate removal
+- Individual candidate management
+- Visual indicators for team completion
 - Clear all functionality
 
-### Team Analytics
-- Average salary calculation
-- Experience distribution
-- Top school percentage
-- Skills frequency analysis
-- Match score visualization
+### Team Selection Modal
+- Automatic opening when team is complete
+- Email export with pre-filled content
+- PDF download with comprehensive report
+- Professional success messaging
 
 ## 🚀 Deployment
 
@@ -167,4 +235,4 @@ This project is licensed under the MIT License.
 
 ---
 
-Built with ❤️ using Next.js 15 and modern web technologies.
+Built with ❤️ using Next.js 15 and modern web technologies. Designed to revolutionize the hiring process with AI-powered candidate selection and team building.

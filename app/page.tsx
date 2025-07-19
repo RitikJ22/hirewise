@@ -1,4 +1,6 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import FilterPanelSkeleton from "@/components/skeletons/FilterPanelSkeleton";
 import CandidateGridSkeleton from "@/components/skeletons/CandidateGridSkeleton";
@@ -6,8 +8,24 @@ import ShortlistPanelSkeleton from "@/components/skeletons/ShortlistPanelSkeleto
 import { FilterPanel } from "@/components/dashboard/FilterPanel";
 import { CandidateGrid } from "@/components/dashboard/CandidateGrid";
 import { ShortlistPanel } from "@/components/dashboard/ShortlistPanel";
+import { TeamSelectionModal } from "@/components/dashboard/TeamSelectionModal";
+import { useAppStore } from "@/lib/store";
 
 const Home = () => {
+  const {
+    shortlistedCandidates,
+    showTeamModal,
+    closeTeamModal,
+    openTeamModal,
+  } = useAppStore();
+
+  // Auto-open modal when 5 candidates are selected
+  useEffect(() => {
+    if (shortlistedCandidates.length === 5) {
+      openTeamModal();
+    }
+  }, [shortlistedCandidates.length, openTeamModal]);
+
   return (
     <div className="h-screen bg-background flex flex-col">
       {/* Header */}
@@ -40,6 +58,13 @@ const Home = () => {
           </div>
         </div>
       </main>
+
+      {/* Team Selection Modal */}
+      <TeamSelectionModal
+        isOpen={showTeamModal}
+        onClose={closeTeamModal}
+        candidates={shortlistedCandidates}
+      />
     </div>
   );
 };
