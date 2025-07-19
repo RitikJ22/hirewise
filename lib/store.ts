@@ -30,15 +30,15 @@ export const useAppStore = create<AppState>((set) => ({
   addCandidate: (candidate) =>
     set((state) => ({
       shortlistedCandidates: state.shortlistedCandidates.some(
-        (c) => c.name === candidate.name
+        (c) => c.email === candidate.email
       )
         ? state.shortlistedCandidates
         : [...state.shortlistedCandidates, candidate],
     })),
-  removeCandidate: (candidateName) =>
+  removeCandidate: (candidateEmail) =>
     set((state) => ({
       shortlistedCandidates: state.shortlistedCandidates.filter(
-        (c) => c.name !== candidateName
+        (c) => c.email !== candidateEmail
       ),
     })),
   clearShortlist: () =>

@@ -115,7 +115,7 @@ export const FilterPanel = () => {
             placeholder="e.g., React, Python, AWS"
             value={localFilters.skills}
             onChange={(e) => handleFilterChange("skills", e.target.value)}
-            className="bg-background border-border"
+            className="bg-background border-border cursor-text"
           />
         </div>
 
@@ -167,7 +167,7 @@ export const FilterPanel = () => {
               handleFilterChange("topSchool", value === "true")
             }
           >
-            <SelectTrigger className="bg-background border-border">
+            <SelectTrigger className="bg-background border-border cursor-pointer">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -184,7 +184,7 @@ export const FilterPanel = () => {
             value={localFilters.sortBy}
             onValueChange={(value) => handleFilterChange("sortBy", value)}
           >
-            <SelectTrigger className="bg-background border-border">
+            <SelectTrigger className="bg-background border-border cursor-pointer">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

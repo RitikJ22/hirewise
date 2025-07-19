@@ -21,8 +21,11 @@ export const ShortlistPanel = () => {
     }).format(salary);
   };
 
-  const handleRemoveCandidate = (candidateName: string) => {
-    removeCandidate(candidateName);
+  const handleRemoveCandidate = (
+    candidateEmail: string,
+    candidateName: string
+  ) => {
+    removeCandidate(candidateEmail);
     Toast.success(
       "Candidate removed",
       `${candidateName} has been removed from your shortlist.`
@@ -104,7 +107,7 @@ export const ShortlistPanel = () => {
               <AnimatePresence>
                 {shortlistedCandidates.map((candidate, index) => (
                   <motion.div
-                    key={candidate.name}
+                    key={`${candidate.name}-${candidate.email}`}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
@@ -144,7 +147,10 @@ export const ShortlistPanel = () => {
                             size="sm"
                             variant="ghost"
                             onClick={() =>
-                              handleRemoveCandidate(candidate.name)
+                              handleRemoveCandidate(
+                                candidate.email,
+                                candidate.name
+                              )
                             }
                             className="text-muted-foreground hover:text-destructive flex-shrink-0 ml-2"
                             title="Remove from shortlist"

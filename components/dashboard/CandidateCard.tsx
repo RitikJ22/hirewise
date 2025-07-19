@@ -24,7 +24,7 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
   const { addCandidate, removeCandidate, shortlistedCandidates } =
     useAppStore();
   const isShortlisted = shortlistedCandidates.some(
-    (c) => c.name === candidate.name
+    (c) => c.email === candidate.email
   );
   const isMaxReached = shortlistedCandidates.length >= 5;
 
@@ -53,7 +53,7 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
   };
 
   const handleRemoveFromShortlist = () => {
-    removeCandidate(candidate.name);
+    removeCandidate(candidate.email);
     Toast.success(
       "Candidate removed",
       `${candidate.name} has been removed from your shortlist.`

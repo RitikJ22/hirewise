@@ -10,6 +10,7 @@ import { useAppStore } from "@/lib/store";
 import { RefreshCw, AlertCircle, Users } from "lucide-react";
 import { Toast } from "@/lib/toast";
 import { CandidateCard } from "./CandidateCard";
+import { BackToTop } from "@/components/ui/back-to-top";
 
 export const CandidateGrid = () => {
   const { filters } = useAppStore();
@@ -57,7 +58,7 @@ export const CandidateGrid = () => {
           setCandidates((prev) => [...prev, ...data.candidates]);
         }
 
-        setHasMore(data.candidates.length === 4); // 4 candidates per page
+        setHasMore(data.hasMore);
         setPage(pageNum);
       } catch (err) {
         const errorMessage =
@@ -128,7 +129,8 @@ export const CandidateGrid = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      <BackToTop />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -180,7 +182,7 @@ export const CandidateGrid = () => {
             <AnimatePresence>
               {candidates.map((candidate, index) => (
                 <motion.div
-                  key={candidate.name}
+                  key={`${candidate.name}-${candidate.email}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -233,9 +235,18 @@ export const CandidateGrid = () => {
       </AnimatePresence>
 
       {/* Load More Indicator */}
-      {hasMore && !loading && candidates.length > 0 && (
+      {hasMore && candidates.length > 0 && (
         <div ref={loadingRef} className="text-center py-4">
-          <Skeleton className="h-4 w-32 mx-auto" />
+          {loading ? (
+            <div className="flex items-center justify-center space-x-2">
+              <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">
+                Loading more candidates...
+              </span>
+            </div>
+          ) : (
+            <Skeleton className="h-4 w-32 mx-auto" />
+          )}
         </div>
       )}
 
