@@ -14,41 +14,88 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { useAppStore } from "@/lib/store";
 import { Toast } from "@/lib/toast";
+import { Checkbox } from "../ui/checkbox";
 
 export const FilterPanel = () => {
-  const { filters, setFilters } = useAppStore();
+  const {
+    filters,
+    setFilters,
+    applyFilters: applyStoreFilters,
+    clearFilters: clearStoreFilters,
+    isFilterApplied,
+    hasFilterChanges,
+  } = useAppStore();
   const [localFilters, setLocalFilters] = useState(filters);
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   useEffect(() => {
     setLocalFilters(filters);
+    setHasLocalChanges(false);
   }, [filters]);
 
   const handleFilterChange = (
     key: keyof typeof filters,
-    value: string | number | boolean
+    value: string | number | boolean | string[]
   ) => {
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
+
+    // Check if local filters differ from applied filters
+    const hasChanges =
+      newFilters.skills !== filters.skills ||
+      JSON.stringify(newFilters.workAvailability) !==
+        JSON.stringify(filters.workAvailability) ||
+      newFilters.minSalary !== filters.minSalary ||
+      newFilters.maxSalary !== filters.maxSalary ||
+      newFilters.location !== filters.location ||
+      newFilters.roleName !== filters.roleName ||
+      newFilters.company !== filters.company ||
+      newFilters.educationLevel !== filters.educationLevel ||
+      newFilters.degreeSubject !== filters.degreeSubject ||
+      newFilters.sortBy !== filters.sortBy;
+
+    setHasLocalChanges(hasChanges);
+  };
+
+  const handleWorkAvailabilityChange = (
+    availability: string,
+    checked: boolean
+  ) => {
+    const current = localFilters.workAvailability;
+    const newAvailability = checked
+      ? [...current, availability]
+      : current.filter((a) => a !== availability);
+    handleFilterChange("workAvailability", newAvailability);
   };
 
   const applyFilters = () => {
     setFilters(localFilters);
+    applyStoreFilters();
+    setHasLocalChanges(false);
 
     // Show toast with filter summary
     const activeFilters = [];
     if (localFilters.skills)
       activeFilters.push(`Skills: ${localFilters.skills}`);
-    if (localFilters.minExp > 0 || localFilters.maxExp < 20) {
+    if (localFilters.workAvailability.length > 0)
       activeFilters.push(
-        `Experience: ${localFilters.minExp}-${localFilters.maxExp} years`
+        `Availability: ${localFilters.workAvailability.join(", ")}`
       );
-    }
-    if (localFilters.minSalary > 0 || localFilters.maxSalary < 500000) {
+    if (localFilters.location)
+      activeFilters.push(`Location: ${localFilters.location}`);
+    if (localFilters.roleName)
+      activeFilters.push(`Role: ${localFilters.roleName}`);
+    if (localFilters.company)
+      activeFilters.push(`Company: ${localFilters.company}`);
+    if (localFilters.educationLevel)
+      activeFilters.push(`Education: ${localFilters.educationLevel}`);
+    if (localFilters.degreeSubject)
+      activeFilters.push(`Degree: ${localFilters.degreeSubject}`);
+    if (localFilters.minSalary > 45000 || localFilters.maxSalary < 150000) {
       activeFilters.push(
         `Salary: $${localFilters.minSalary.toLocaleString()}-$${localFilters.maxSalary.toLocaleString()}`
       );
     }
-    if (localFilters.topSchool) activeFilters.push("Top schools only");
 
     const filterCount = activeFilters.length;
     if (filterCount > 0) {
@@ -69,23 +116,23 @@ export const FilterPanel = () => {
   };
 
   const resetFilters = () => {
-    const defaultFilters = {
+    clearStoreFilters();
+    setLocalFilters({
       skills: "",
-      minExp: 0,
-      maxExp: 20,
-      minSalary: 0,
-      maxSalary: 500000,
-      topSchool: false,
-      sortBy: "matchScore",
+      workAvailability: [],
+      minSalary: 45000,
+      maxSalary: 150000,
+      location: "",
+      roleName: "",
+      company: "",
+      educationLevel: "all",
+      degreeSubject: "",
+      sortBy: "date",
       page: 1,
-      limit: 20,
-    };
-    setLocalFilters(defaultFilters);
-    setFilters(defaultFilters);
-    Toast.success(
-      "Filters reset",
-      "All filters have been reset to default values."
-    );
+      limit: 10,
+    });
+    setHasLocalChanges(false);
+    Toast.success("Filters cleared", "Showing all candidates without filters.");
   };
 
   return (
@@ -97,14 +144,16 @@ export const FilterPanel = () => {
     >
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-foreground">Filters</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={resetFilters}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          Reset
-        </Button>
+        {isFilterApplied && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={resetFilters}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            Clear Filters
+          </Button>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -119,90 +168,203 @@ export const FilterPanel = () => {
           />
         </div>
 
-        {/* Experience Range */}
+        {/* Work Availability */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">
-            Experience (years): {localFilters.minExp} - {localFilters.maxExp}
+            Work Availability
           </label>
-          <Slider
-            value={[localFilters.minExp, localFilters.maxExp]}
-            onValueChange={(value) => {
-              handleFilterChange("minExp", value[0]);
-              handleFilterChange("maxExp", value[1]);
-            }}
-            max={20}
-            min={0}
-            step={1}
-            className="w-full"
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="full-time"
+                checked={localFilters.workAvailability.includes("full-time")}
+                onCheckedChange={(checked: boolean) =>
+                  handleWorkAvailabilityChange("full-time", checked)
+                }
+              />
+              <label
+                htmlFor="full-time"
+                className="text-sm text-foreground cursor-pointer"
+              >
+                Full-time
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="part-time"
+                checked={localFilters.workAvailability.includes("part-time")}
+                onCheckedChange={(checked: boolean) =>
+                  handleWorkAvailabilityChange("part-time", checked)
+                }
+              />
+              <label
+                htmlFor="part-time"
+                className="text-sm text-foreground cursor-pointer"
+              >
+                Part-time
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Location Filter */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">
+            Location
+          </label>
+          <Input
+            placeholder="e.g., United States, Canada"
+            value={localFilters.location}
+            onChange={(e) => handleFilterChange("location", e.target.value)}
+            className="bg-background border-border cursor-text"
+          />
+        </div>
+
+        {/* Role Name Filter */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">
+            Role Name
+          </label>
+          <Input
+            placeholder="e.g., Software Engineer, Developer"
+            value={localFilters.roleName}
+            onChange={(e) => handleFilterChange("roleName", e.target.value)}
+            className="bg-background border-border cursor-text"
+          />
+        </div>
+
+        {/* Company Filter */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Company</label>
+          <Input
+            placeholder="e.g., Google, Microsoft"
+            value={localFilters.company}
+            onChange={(e) => handleFilterChange("company", e.target.value)}
+            className="bg-background border-border cursor-text"
+          />
+        </div>
+
+        {/* Education and Sort By Row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Education
+            </label>
+            <Select
+              value={localFilters.educationLevel}
+              onValueChange={(value) =>
+                handleFilterChange("educationLevel", value)
+              }
+            >
+              <SelectTrigger className="bg-background border-border cursor-pointer w-full">
+                <SelectValue
+                  placeholder="Select education level"
+                  className="truncate"
+                />
+              </SelectTrigger>
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={4}
+                avoidCollisions={false}
+              >
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="High School Diploma">
+                  High School Diploma
+                </SelectItem>
+                <SelectItem value="Bachelor's Degree">
+                  Bachelor&apos;s Degree
+                </SelectItem>
+                <SelectItem value="Master's Degree">
+                  Master&apos;s Degree
+                </SelectItem>
+                <SelectItem value="Doctorate">Doctorate</SelectItem>
+                <SelectItem value="Juris Doctor (J.D)">
+                  Juris Doctor (J.D)
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Sort By
+            </label>
+            <Select
+              value={localFilters.sortBy}
+              onValueChange={(value) => handleFilterChange("sortBy", value)}
+            >
+              <SelectTrigger className="bg-background border-border cursor-pointer w-full">
+                <SelectValue className="truncate" />
+              </SelectTrigger>
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={4}
+                avoidCollisions={false}
+              >
+                <SelectItem value="matchScore">Match Score</SelectItem>
+                <SelectItem value="date">Date Applied</SelectItem>
+                <SelectItem value="salary">Salary</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="experience">
+                  Experience (Job Count)
+                </SelectItem>
+                <SelectItem value="topSchools">Top Schools</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Degree Subject Filter */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">
+            Degree Subject
+          </label>
+          <Input
+            placeholder="e.g., Computer Science, Engineering"
+            value={localFilters.degreeSubject}
+            onChange={(e) =>
+              handleFilterChange("degreeSubject", e.target.value)
+            }
+            className="bg-background border-border cursor-text"
           />
         </div>
 
         {/* Salary Range */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">
-            Salary Range: ${localFilters.minSalary.toLocaleString()} - $
-            {localFilters.maxSalary.toLocaleString()}
+            Salary Range
           </label>
+          <div className="flex justify-between text-xs text-muted-foreground mb-2">
+            <span>${localFilters.minSalary.toLocaleString()}</span>
+            <span>${localFilters.maxSalary.toLocaleString()}</span>
+          </div>
           <Slider
             value={[localFilters.minSalary, localFilters.maxSalary]}
             onValueChange={(value) => {
-              handleFilterChange("minSalary", value[0]);
-              handleFilterChange("maxSalary", value[1]);
+              setLocalFilters((prev) => ({
+                ...prev,
+                minSalary: value[0],
+                maxSalary: value[1],
+              }));
             }}
-            max={500000}
-            min={0}
-            step={10000}
+            max={150000}
+            min={45000}
+            step={5000}
             className="w-full"
           />
-        </div>
-
-        {/* Top School Filter */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">
-            Education
-          </label>
-          <Select
-            value={localFilters.topSchool ? "true" : "false"}
-            onValueChange={(value) =>
-              handleFilterChange("topSchool", value === "true")
-            }
-          >
-            <SelectTrigger className="bg-background border-border cursor-pointer">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="false">All Schools</SelectItem>
-              <SelectItem value="true">Top 50 Schools Only</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Sort By */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Sort By</label>
-          <Select
-            value={localFilters.sortBy}
-            onValueChange={(value) => handleFilterChange("sortBy", value)}
-          >
-            <SelectTrigger className="bg-background border-border cursor-pointer">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="matchScore">Match Score</SelectItem>
-              <SelectItem value="date">Date Applied</SelectItem>
-              <SelectItem value="experience">Experience</SelectItem>
-              <SelectItem value="salary">Salary</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
       <Button
         onClick={applyFilters}
-        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+        disabled={!hasLocalChanges && isFilterApplied}
+        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Apply Filters
+        {isFilterApplied ? "Filters Applied" : "Apply Filters"}
       </Button>
     </motion.div>
   );

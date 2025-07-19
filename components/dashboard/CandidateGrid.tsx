@@ -7,37 +7,46 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Candidate } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
-import { RefreshCw, AlertCircle, Users } from "lucide-react";
+import { RefreshCw, AlertCircle, Users, X } from "lucide-react";
 import { Toast } from "@/lib/toast";
 import { CandidateCard } from "./CandidateCard";
 import { BackToTop } from "@/components/ui/back-to-top";
 
 export const CandidateGrid = () => {
-  const { filters } = useAppStore();
+  const { filters, isFilterApplied } = useAppStore();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
 
   const fetchCandidates = useCallback(
     async (pageNum: number, reset: boolean = false) => {
       try {
-        setLoading(true);
+        if (reset) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
         setError(null);
 
         const queryParams = new URLSearchParams({
           skills: filters.skills,
-          minExp: filters.minExp.toString(),
-          maxExp: filters.maxExp.toString(),
+          workAvailability: filters.workAvailability.join(","),
           minSalary: filters.minSalary.toString(),
           maxSalary: filters.maxSalary.toString(),
-          topSchool: filters.topSchool.toString(),
+          location: filters.location,
+          roleName: filters.roleName,
+          company: filters.company,
+          educationLevel: filters.educationLevel,
+          degreeSubject: filters.degreeSubject,
           sortBy: filters.sortBy,
           page: pageNum.toString(),
-          limit: "4", // Show 4 candidates per page (2x2 grid)
+          limit: "10", // Show 10 candidates per page
         });
 
         const response = await fetch(`/api/candidates?${queryParams}`);
@@ -50,10 +59,7 @@ export const CandidateGrid = () => {
 
         if (reset) {
           setCandidates(data.candidates);
-          Toast.success(
-            "Candidates loaded",
-            `Found ${data.candidates.length} candidates matching your criteria.`
-          );
+          setTotal(data.total);
         } else {
           setCandidates((prev) => [...prev, ...data.candidates]);
         }
@@ -70,31 +76,34 @@ export const CandidateGrid = () => {
         );
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     },
-    [filters]
+    [filters, isFilterApplied]
   );
 
   useEffect(() => {
     setPage(1);
+    setCandidates([]);
+    setTotal(0);
     fetchCandidates(1, true);
   }, [filters, fetchCandidates]);
 
   const lastElementRef = useCallback(
     (node: HTMLDivElement) => {
-      if (loading) return;
+      if (loading || loadingMore) return;
 
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
           fetchCandidates(page + 1);
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore, page, fetchCandidates]
+    [loading, loadingMore, hasMore, page, fetchCandidates]
   );
 
   const handleRetry = () => {
@@ -104,6 +113,107 @@ export const CandidateGrid = () => {
   const handleRefresh = () => {
     fetchCandidates(1, true);
     Toast.info("Refreshing candidates", "Loading the latest candidate data...");
+  };
+
+  const getActiveFilters = () => {
+    const activeFilters = [];
+
+    if (filters.skills) {
+      activeFilters.push({
+        key: "skills",
+        label: `Skills: ${filters.skills}`,
+        value: filters.skills,
+      });
+    }
+
+    if (filters.workAvailability.length > 0) {
+      activeFilters.push({
+        key: "workAvailability",
+        label: `Availability: ${filters.workAvailability.join(", ")}`,
+        value: filters.workAvailability,
+      });
+    }
+
+    if (filters.location) {
+      activeFilters.push({
+        key: "location",
+        label: `Location: ${filters.location}`,
+        value: filters.location,
+      });
+    }
+
+    if (filters.roleName) {
+      activeFilters.push({
+        key: "roleName",
+        label: `Role: ${filters.roleName}`,
+        value: filters.roleName,
+      });
+    }
+
+    if (filters.company) {
+      activeFilters.push({
+        key: "company",
+        label: `Company: ${filters.company}`,
+        value: filters.company,
+      });
+    }
+
+    if (filters.educationLevel && filters.educationLevel !== "all") {
+      activeFilters.push({
+        key: "educationLevel",
+        label: `Education: ${filters.educationLevel}`,
+        value: filters.educationLevel,
+      });
+    }
+
+    if (filters.degreeSubject) {
+      activeFilters.push({
+        key: "degreeSubject",
+        label: `Degree: ${filters.degreeSubject}`,
+        value: filters.degreeSubject,
+      });
+    }
+
+    if (filters.minSalary > 45000 || filters.maxSalary < 150000) {
+      activeFilters.push({
+        key: "salary",
+        label: `Salary: $${filters.minSalary.toLocaleString()}-$${filters.maxSalary.toLocaleString()}`,
+        value: { min: filters.minSalary, max: filters.maxSalary },
+      });
+    }
+
+    return activeFilters;
+  };
+
+  const handleRemoveFilter = (filterKey: string) => {
+    const { setFilters } = useAppStore.getState();
+
+    switch (filterKey) {
+      case "skills":
+        setFilters({ skills: "" });
+        break;
+      case "workAvailability":
+        setFilters({ workAvailability: [] });
+        break;
+      case "location":
+        setFilters({ location: "" });
+        break;
+      case "roleName":
+        setFilters({ roleName: "" });
+        break;
+      case "company":
+        setFilters({ company: "" });
+        break;
+      case "educationLevel":
+        setFilters({ educationLevel: "all" });
+        break;
+      case "degreeSubject":
+        setFilters({ degreeSubject: "" });
+        break;
+      case "salary":
+        setFilters({ minSalary: 45000, maxSalary: 150000 });
+        break;
+    }
   };
 
   if (error) {
@@ -135,10 +245,19 @@ export const CandidateGrid = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Users className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold text-foreground">Candidates</h2>
-          {candidates.length > 0 && (
+          <h2 className="text-xl font-semibold text-foreground">
+            {getActiveFilters().length > 0
+              ? "Filtered Candidates"
+              : "All Candidates"}
+          </h2>
+          {total > 0 && (
             <span className="text-sm text-muted-foreground">
-              ({candidates.length} found)
+              ({candidates.length} of {total} shown)
+            </span>
+          )}
+          {getActiveFilters().length > 0 && (
+            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+              Filter Applied
             </span>
           )}
         </div>
@@ -155,6 +274,34 @@ export const CandidateGrid = () => {
           Refresh
         </Button>
       </div>
+
+      {/* Active Filter Tags */}
+      {getActiveFilters().length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-wrap gap-2"
+        >
+          {getActiveFilters().map((filter) => (
+            <motion.div
+              key={filter.key}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex items-center space-x-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm border border-primary/20"
+            >
+              <span className="text-xs">{filter.label}</span>
+              <button
+                onClick={() => handleRemoveFilter(filter.key)}
+                className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                title={`Remove ${filter.label}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
 
       {/* Candidate Grid */}
       <AnimatePresence mode="wait">
@@ -182,7 +329,7 @@ export const CandidateGrid = () => {
             <AnimatePresence>
               {candidates.map((candidate, index) => (
                 <motion.div
-                  key={`${candidate.name}-${candidate.email}`}
+                  key={`${candidate.name}-${candidate.email}-${candidate.phone}-${index}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -195,6 +342,22 @@ export const CandidateGrid = () => {
                 </motion.div>
               ))}
             </AnimatePresence>
+
+            {/* Loading More Spinner */}
+            {loadingMore && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="col-span-2 flex justify-center py-8"
+              >
+                <div className="flex items-center space-x-2">
+                  <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">
+                    Loading more candidates...
+                  </span>
+                </div>
+              </motion.div>
+            )}
 
             {/* Loading Skeleton */}
             {loading && (

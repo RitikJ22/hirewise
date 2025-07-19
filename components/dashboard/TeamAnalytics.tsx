@@ -4,13 +4,26 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Candidate } from "@/lib/types";
-import { Users, DollarSign, GraduationCap, TrendingUp } from "lucide-react";
+import {
+  Users,
+  DollarSign,
+  GraduationCap,
+  TrendingUp,
+  MapPin,
+  Building2,
+  Briefcase,
+  Target,
+} from "lucide-react";
 
 interface TeamAnalyticsProps {
   candidates: Candidate[];
+  hasFilters?: boolean;
 }
 
-export default function TeamAnalytics({ candidates }: TeamAnalyticsProps) {
+export default function TeamAnalytics({
+  candidates,
+  hasFilters = false,
+}: TeamAnalyticsProps) {
   if (candidates.length === 0) {
     return (
       <motion.div
@@ -25,16 +38,23 @@ export default function TeamAnalytics({ candidates }: TeamAnalyticsProps) {
     );
   }
 
+  // Calculate meaningful analytics based on our data structure
   const avgSalary =
     candidates.reduce((sum, c) => sum + (c.salaryNumeric || 0), 0) /
     candidates.length;
-  const avgExperience =
+
+  const avgJobCount =
     candidates.reduce((sum, c) => sum + (c.experienceProxy || 0), 0) /
     candidates.length;
+
   const topSchoolCount = candidates.filter((c) => c.isTopSchool).length;
+
   const avgMatchScore =
     candidates.reduce((sum, c) => sum + (c.matchScore || 0), 0) /
     candidates.length;
+
+  // Essential analytics for recruiters
+  const uniqueLocations = new Set(candidates.map((c) => c.location)).size;
 
   const formatSalary = (salary: number) => {
     return new Intl.NumberFormat("us-US", {
@@ -49,29 +69,29 @@ export default function TeamAnalytics({ candidates }: TeamAnalyticsProps) {
       title: "Team Size",
       value: candidates.length,
       icon: Users,
-      color: "text-[#454545]",
-      bgColor: "bg-[#454545]/10",
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10",
     },
     {
       title: "Avg. Salary",
       value: formatSalary(avgSalary),
       icon: DollarSign,
-      color: "text-[#454545]",
-      bgColor: "bg-[#454545]/10",
+      color: "text-green-500",
+      bgColor: "bg-green-500/10",
     },
     {
-      title: "Avg. Experience",
-      value: `${avgExperience.toFixed(1)} years`,
-      icon: TrendingUp,
-      color: "text-[#454545]",
-      bgColor: "bg-[#454545]/10",
+      title: "Locations",
+      value: `${uniqueLocations} cities`,
+      icon: MapPin,
+      color: "text-indigo-500",
+      bgColor: "bg-indigo-500/10",
     },
     {
       title: "Top Schools",
       value: `${topSchoolCount}/${candidates.length}`,
       icon: GraduationCap,
-      color: "text-[#454545]",
-      bgColor: "bg-[#454545]/10",
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10",
     },
   ];
 
@@ -91,7 +111,8 @@ export default function TeamAnalytics({ candidates }: TeamAnalyticsProps) {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* Main Stats */}
+      <div className="grid grid-cols-2 gap-3">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
@@ -99,22 +120,20 @@ export default function TeamAnalytics({ candidates }: TeamAnalyticsProps) {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
           >
-            <Card className="bg-card border-border h-full">
-              <CardContent className="p-4 h-full flex items-center">
-                <div className="flex items-center space-x-3 w-full">
-                  <div
-                    className={`p-2.5 rounded-lg ${stat.bgColor} flex-shrink-0`}
-                  >
-                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                  </div>
-                  <div className="space-y-1 min-w-0 flex-1">
-                    <p className="text-xs text-muted-foreground font-medium">
-                      {stat.title}
-                    </p>
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {stat.value}
-                    </p>
-                  </div>
+            <Card className="bg-card border-border h-full hover:border-primary/20 transition-colors">
+              <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center">
+                <div
+                  className={`p-3 rounded-lg ${stat.bgColor} flex-shrink-0 mb-3`}
+                >
+                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                </div>
+                <div className="space-y-1 w-full">
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {stat.title}
+                  </p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {stat.value}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -122,26 +141,31 @@ export default function TeamAnalytics({ candidates }: TeamAnalyticsProps) {
         ))}
       </div>
 
-      {/* Average Match Score */}
-      <Card className="bg-card border-border">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground font-medium">
-                Average Match Score
-              </p>
-              <p className="text-3xl font-bold text-foreground">
-                {avgMatchScore.toFixed(0)}%
-              </p>
+      {/* Average Match Score - Only show when filters are applied */}
+      {hasFilters && (
+        <Card className="bg-card border-border hover:border-primary/20 transition-colors">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Average Match Score
+                  </p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {avgMatchScore.toFixed(0)}%
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-primary font-bold text-lg">
+                  {avgMatchScore.toFixed(0)}
+                </span>
+              </div>
             </div>
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <span className="text-primary font-bold text-xl">
-                {avgMatchScore.toFixed(0)}
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Skills Distribution */}
       <div className="space-y-4">
