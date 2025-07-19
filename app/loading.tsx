@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Loading() {
+export const Loading = () => {
   return (
     <div className="h-screen bg-background flex flex-col">
       {/* Header */}
@@ -106,3 +106,4 @@ export default function Loading() {
     </div>
   );
 }
+export default Loading;

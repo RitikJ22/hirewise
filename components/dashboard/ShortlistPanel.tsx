@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/store";
-import TeamAnalytics from "./TeamAnalytics";
 import { X, Users, Trash2, MapPin, User } from "lucide-react";
 import { Toast } from "@/lib/toast";
+import { TeamAnalytics } from "./TeamAnalytics";
 
 export const ShortlistPanel = () => {
   const { shortlistedCandidates, removeCandidate, clearShortlist, filters } =

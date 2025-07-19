@@ -23,10 +23,10 @@ interface TeamAnalyticsProps {
   hasFilters?: boolean;
 }
 
-export default function TeamAnalytics({
+export const TeamAnalytics = ({
   candidates,
-  hasFilters = false,
-}: TeamAnalyticsProps) {
+  hasFilters = false, 
+}: TeamAnalyticsProps) => {
   const { openTeamModal } = useAppStore();
 
   if (candidates.length === 0) {
@@ -203,9 +203,9 @@ export default function TeamAnalytics({
       </motion.div>
     </>
   );
-}
+};
 
-function getTopSkills(candidates: Candidate[]) {
+const getTopSkills = (candidates: Candidate[]) => {
   const skillCounts: { [key: string]: number } = {};
 
   candidates.forEach((candidate) => {
