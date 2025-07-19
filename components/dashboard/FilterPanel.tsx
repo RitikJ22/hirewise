@@ -108,7 +108,7 @@ export const FilterPanel = () => {
         }`
       );
     } else {
-      Toast.info(
+      Toast.loading(
         "All filters cleared",
         "Showing all candidates without filters."
       );
@@ -132,7 +132,7 @@ export const FilterPanel = () => {
       limit: 10,
     });
     setHasLocalChanges(false);
-    Toast.success("Filters cleared", "Showing all candidates without filters.");
+    Toast.remove("Filters cleared", "Showing all candidates without filters.");
   };
 
   return (
