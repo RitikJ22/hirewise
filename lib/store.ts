@@ -6,6 +6,9 @@ interface AppState {
   shortlistedCandidates: Candidate[];
   isFilterApplied: boolean;
   showTeamModal: boolean;
+  // Panel state
+  isLeftPanelExpanded: boolean;
+  isRightPanelExpanded: boolean;
   setFilters: (newFilters: Partial<FilterState>) => void;
   applyFilters: () => void;
   clearFilters: () => void;
@@ -15,6 +18,11 @@ interface AppState {
   hasFilterChanges: () => boolean;
   openTeamModal: () => void;
   closeTeamModal: () => void;
+  // Panel actions
+  toggleLeftPanel: () => void;
+  toggleRightPanel: () => void;
+  setLeftPanelExpanded: (expanded: boolean) => void;
+  setRightPanelExpanded: (expanded: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -35,6 +43,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   shortlistedCandidates: [],
   isFilterApplied: false,
   showTeamModal: false,
+  // Panel state - default to expanded
+  isLeftPanelExpanded: true,
+  isRightPanelExpanded: true,
   setFilters: (newFilters) =>
     set((state) => {
       const updatedFilters = { ...state.filters, ...newFilters, page: 1 };
@@ -110,4 +121,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   openTeamModal: () => set({ showTeamModal: true }),
   closeTeamModal: () => set({ showTeamModal: false }),
+  // Panel actions
+  toggleLeftPanel: () => set((state) => ({ isLeftPanelExpanded: !state.isLeftPanelExpanded })),
+  toggleRightPanel: () => set((state) => ({ isRightPanelExpanded: !state.isRightPanelExpanded })),
+  setLeftPanelExpanded: (expanded) => set({ isLeftPanelExpanded: expanded }),
+  setRightPanelExpanded: (expanded) => set({ isRightPanelExpanded: expanded }),
 })); 
