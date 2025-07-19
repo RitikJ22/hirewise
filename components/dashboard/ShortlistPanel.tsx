@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/store";
@@ -9,7 +9,7 @@ import TeamAnalytics from "./TeamAnalytics";
 import { X, Users, Trash2 } from "lucide-react";
 import { Toast } from "@/lib/toast";
 
-export default function ShortlistPanel() {
+export const ShortlistPanel = () => {
   const { shortlistedCandidates, removeCandidate, clearShortlist } =
     useAppStore();
 
@@ -110,7 +110,7 @@ export default function ShortlistPanel() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.2, delay: index * 0.05 }}
                   >
-                    <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+                    <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div className="space-y-2 flex-1 min-w-0">
@@ -179,4 +179,4 @@ export default function ShortlistPanel() {
       </div>
     </motion.div>
   );
-}
+};

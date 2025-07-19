@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Candidate } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
-import CandidateCard from "./CandidateCard";
 import { RefreshCw, AlertCircle, Users } from "lucide-react";
 import { Toast } from "@/lib/toast";
+import { CandidateCard } from "./CandidateCard";
 
-export default function CandidateGrid() {
+export const CandidateGrid = () => {
   const { filters } = useAppStore();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -253,4 +253,4 @@ export default function CandidateGrid() {
       )}
     </div>
   );
-}
+};

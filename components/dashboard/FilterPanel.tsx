@@ -15,7 +15,7 @@ import { Slider } from "@/components/ui/slider";
 import { useAppStore } from "@/lib/store";
 import { Toast } from "@/lib/toast";
 
-export default function FilterPanel() {
+export const FilterPanel = () => {
   const { filters, setFilters } = useAppStore();
   const [localFilters, setLocalFilters] = useState(filters);
 
@@ -206,4 +206,4 @@ export default function FilterPanel() {
       </Button>
     </motion.div>
   );
-}
+};
