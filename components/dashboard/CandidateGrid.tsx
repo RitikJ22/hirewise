@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Candidate } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
-import { RefreshCw, AlertCircle, Users } from "lucide-react";
+import { RefreshCw, AlertCircle, Users, X } from "lucide-react";
 import { Toast } from "@/lib/toast";
 import { CandidateCard } from "./CandidateCard";
 import { BackToTop } from "@/components/ui/back-to-top";
@@ -115,6 +115,107 @@ export const CandidateGrid = () => {
     Toast.info("Refreshing candidates", "Loading the latest candidate data...");
   };
 
+  const getActiveFilters = () => {
+    const activeFilters = [];
+
+    if (filters.skills) {
+      activeFilters.push({
+        key: "skills",
+        label: `Skills: ${filters.skills}`,
+        value: filters.skills,
+      });
+    }
+
+    if (filters.workAvailability.length > 0) {
+      activeFilters.push({
+        key: "workAvailability",
+        label: `Availability: ${filters.workAvailability.join(", ")}`,
+        value: filters.workAvailability,
+      });
+    }
+
+    if (filters.location) {
+      activeFilters.push({
+        key: "location",
+        label: `Location: ${filters.location}`,
+        value: filters.location,
+      });
+    }
+
+    if (filters.roleName) {
+      activeFilters.push({
+        key: "roleName",
+        label: `Role: ${filters.roleName}`,
+        value: filters.roleName,
+      });
+    }
+
+    if (filters.company) {
+      activeFilters.push({
+        key: "company",
+        label: `Company: ${filters.company}`,
+        value: filters.company,
+      });
+    }
+
+    if (filters.educationLevel && filters.educationLevel !== "all") {
+      activeFilters.push({
+        key: "educationLevel",
+        label: `Education: ${filters.educationLevel}`,
+        value: filters.educationLevel,
+      });
+    }
+
+    if (filters.degreeSubject) {
+      activeFilters.push({
+        key: "degreeSubject",
+        label: `Degree: ${filters.degreeSubject}`,
+        value: filters.degreeSubject,
+      });
+    }
+
+    if (filters.minSalary > 45000 || filters.maxSalary < 150000) {
+      activeFilters.push({
+        key: "salary",
+        label: `Salary: $${filters.minSalary.toLocaleString()}-$${filters.maxSalary.toLocaleString()}`,
+        value: { min: filters.minSalary, max: filters.maxSalary },
+      });
+    }
+
+    return activeFilters;
+  };
+
+  const handleRemoveFilter = (filterKey: string) => {
+    const { setFilters } = useAppStore.getState();
+
+    switch (filterKey) {
+      case "skills":
+        setFilters({ skills: "" });
+        break;
+      case "workAvailability":
+        setFilters({ workAvailability: [] });
+        break;
+      case "location":
+        setFilters({ location: "" });
+        break;
+      case "roleName":
+        setFilters({ roleName: "" });
+        break;
+      case "company":
+        setFilters({ company: "" });
+        break;
+      case "educationLevel":
+        setFilters({ educationLevel: "all" });
+        break;
+      case "degreeSubject":
+        setFilters({ degreeSubject: "" });
+        break;
+      case "salary":
+        setFilters({ minSalary: 45000, maxSalary: 150000 });
+        break;
+    }
+  };
+
   if (error) {
     return (
       <motion.div
@@ -145,14 +246,16 @@ export const CandidateGrid = () => {
         <div className="flex items-center space-x-2">
           <Users className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold text-foreground">
-            {isFilterApplied ? "Filtered Candidates" : "All Candidates"}
+            {getActiveFilters().length > 0
+              ? "Filtered Candidates"
+              : "All Candidates"}
           </h2>
           {total > 0 && (
             <span className="text-sm text-muted-foreground">
               ({candidates.length} of {total} shown)
             </span>
           )}
-          {isFilterApplied && (
+          {getActiveFilters().length > 0 && (
             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
               Filter Applied
             </span>
@@ -171,6 +274,34 @@ export const CandidateGrid = () => {
           Refresh
         </Button>
       </div>
+
+      {/* Active Filter Tags */}
+      {getActiveFilters().length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-wrap gap-2"
+        >
+          {getActiveFilters().map((filter) => (
+            <motion.div
+              key={filter.key}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex items-center space-x-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm border border-primary/20"
+            >
+              <span className="text-xs">{filter.label}</span>
+              <button
+                onClick={() => handleRemoveFilter(filter.key)}
+                className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                title={`Remove ${filter.label}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
 
       {/* Candidate Grid */}
       <AnimatePresence mode="wait">

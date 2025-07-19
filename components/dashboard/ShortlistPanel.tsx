@@ -10,8 +10,20 @@ import { X, Users, Trash2 } from "lucide-react";
 import { Toast } from "@/lib/toast";
 
 export const ShortlistPanel = () => {
-  const { shortlistedCandidates, removeCandidate, clearShortlist } =
+  const { shortlistedCandidates, removeCandidate, clearShortlist, filters } =
     useAppStore();
+
+  // Check if any filters are applied
+  const hasFilters =
+    filters.skills !== "" ||
+    filters.workAvailability.length > 0 ||
+    filters.minSalary !== 45000 ||
+    filters.maxSalary !== 150000 ||
+    filters.location !== "" ||
+    filters.roleName !== "" ||
+    filters.company !== "" ||
+    filters.educationLevel !== "all" ||
+    filters.degreeSubject !== "";
 
   const formatSalary = (salary: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -72,7 +84,10 @@ export const ShortlistPanel = () => {
       </div>
 
       {/* Team Analytics */}
-      <TeamAnalytics candidates={shortlistedCandidates} />
+      <TeamAnalytics
+        candidates={shortlistedCandidates}
+        hasFilters={hasFilters}
+      />
 
       {/* Shortlisted Candidates */}
       <div className="space-y-4">
@@ -121,12 +136,15 @@ export const ShortlistPanel = () => {
                               <h4 className="font-medium text-foreground truncate">
                                 {candidate.name}
                               </h4>
-                              <Badge
-                                variant="secondary"
-                                className="bg-primary/20 text-primary text-xs flex-shrink-0"
-                              >
-                                {candidate.matchScore || 0}%
-                              </Badge>
+                              {hasFilters &&
+                                candidate.matchScore !== undefined && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="bg-primary/20 text-primary text-xs flex-shrink-0"
+                                  >
+                                    {candidate.matchScore}%
+                                  </Badge>
+                                )}
                             </div>
                             <p className="text-sm text-muted-foreground truncate">
                               {candidate.email}

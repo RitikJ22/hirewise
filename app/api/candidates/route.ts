@@ -3,36 +3,102 @@ import { Candidate, ApiResponse } from '@/lib/types';
 import fs from 'fs';
 import path from 'path';
 
-// Helper function to calculate match score
-function calculateMatchScore(candidate: Candidate, skillsFilter: string): number {
-  let score = 0;
+// Helper function to calculate match score based on applied filters
+function calculateMatchScore(
+  candidate: Candidate, 
+  filters: {
+    skills: string;
+    workAvailability: string[];
+    location: string;
+    roleName: string;
+    company: string;
+    educationLevel: string;
+    degreeSubject: string;
+  }
+): number {
+  let totalScore = 0;
+  let totalWeight = 0;
   
-  // Skills match (50% weight)
-  if (skillsFilter) {
-    const requiredSkills = skillsFilter.toLowerCase().split(',').map(s => s.trim());
-    const candidateSkills = candidate.skills.map(s => s.toLowerCase());
+  // Skills match (30% weight)
+  if (filters.skills) {
+    const requiredSkills = filters.skills.toLowerCase().split(',').map(s => s.trim());
+    const candidateSkills = candidate.skills?.map(s => s.toLowerCase()) || [];
     const matchedSkills = requiredSkills.filter(skill => 
       candidateSkills.some(candidateSkill => candidateSkill.includes(skill))
     );
-    score += (matchedSkills.length / requiredSkills.length) * 50;
+    const skillsScore = (matchedSkills.length / requiredSkills.length) * 30;
+    totalScore += skillsScore;
+    totalWeight += 30;
   }
   
-  // Experience score (25% weight)
-  const experienceScore = Math.min(candidate.experienceProxy || 0, 10) / 10 * 25;
-  score += experienceScore;
-  
-  // Education score (15% weight)
-  if (candidate.isTopSchool) {
-    score += 15;
+  // Work availability match (20% weight)
+  if (filters.workAvailability.length > 0) {
+    const hasMatchingAvailability = filters.workAvailability.some(availability =>
+      candidate.work_availability?.includes(availability)
+    );
+    if (hasMatchingAvailability) {
+      totalScore += 20;
+    }
+    totalWeight += 20;
   }
   
-  // Salary competitiveness (10% weight)
-  const avgSalary = 80000; // Example average salary
-  const salaryDiff = Math.abs((candidate.salaryNumeric || 0) - avgSalary);
-  const salaryScore = Math.max(0, 10 - (salaryDiff / avgSalary) * 10);
-  score += salaryScore;
+  // Location match (15% weight)
+  if (filters.location) {
+    const locationMatch = candidate.location?.toLowerCase().includes(filters.location.toLowerCase());
+    if (locationMatch) {
+      totalScore += 15;
+    }
+    totalWeight += 15;
+  }
   
-  return Math.round(score);
+  // Role name match (15% weight)
+  if (filters.roleName) {
+    const hasMatchingRole = candidate.work_experiences?.some(exp =>
+      exp.roleName?.toLowerCase().includes(filters.roleName.toLowerCase())
+    );
+    if (hasMatchingRole) {
+      totalScore += 15;
+    }
+    totalWeight += 15;
+  }
+  
+  // Company match (10% weight)
+  if (filters.company) {
+    const hasMatchingCompany = candidate.work_experiences?.some(exp =>
+      exp.company?.toLowerCase().includes(filters.company.toLowerCase())
+    );
+    if (hasMatchingCompany) {
+      totalScore += 10;
+    }
+    totalWeight += 10;
+  }
+  
+  // Education level match (5% weight)
+  if (filters.educationLevel && filters.educationLevel !== 'all') {
+    if (candidate.education?.highest_level === filters.educationLevel) {
+      totalScore += 5;
+    }
+    totalWeight += 5;
+  }
+  
+  // Degree subject match (5% weight)
+  if (filters.degreeSubject) {
+    const hasMatchingDegree = candidate.education?.degrees?.some(degree =>
+      degree.subject?.toLowerCase().includes(filters.degreeSubject.toLowerCase())
+    );
+    if (hasMatchingDegree) {
+      totalScore += 5;
+    }
+    totalWeight += 5;
+  }
+  
+  // If no filters are applied, return 0
+  if (totalWeight === 0) {
+    return 0;
+  }
+  
+  // Calculate percentage based on applied filters
+  return Math.round((totalScore / totalWeight) * 100);
 }
 
 // Helper function to parse salary
@@ -86,6 +152,11 @@ export async function GET(request: NextRequest) {
     const rawData = fs.readFileSync(dataPath, 'utf-8');
     const candidates: Candidate[] = JSON.parse(rawData);
     
+    // Check if any filters are applied (excluding default salary range)
+    const hasFilters = skills || workAvailability.length > 0 || 
+                      location || roleName || company || 
+                      (educationLevel && educationLevel !== 'all') || degreeSubject;
+    
     // Process candidates and add computed properties
     const processedCandidates = candidates.map(candidate => {
       try {
@@ -95,8 +166,17 @@ export async function GET(request: NextRequest) {
           degree => degree.isTop50 || degree.isTop25
         ) || false;
         
-        // Only calculate match score if skills filter is applied
-        const matchScore = skills ? calculateMatchScore(candidate, skills) : undefined;
+        // Calculate match score based on all applied filters
+        const appliedFilters = {
+          skills,
+          workAvailability,
+          location,
+          roleName,
+          company,
+          educationLevel,
+          degreeSubject,
+        };
+        const matchScore = hasFilters ? calculateMatchScore(candidate, appliedFilters) : undefined;
         
         return {
           ...candidate,
@@ -117,11 +197,6 @@ export async function GET(request: NextRequest) {
         };
       }
     });
-    
-    // Check if any filters are applied (excluding default salary range)
-    const hasFilters = skills || workAvailability.length > 0 || 
-                      location || roleName || company || 
-                      (educationLevel && educationLevel !== 'all') || degreeSubject;
     
         // Always apply salary filtering, then apply other filters if any are set
     let filteredCandidates = processedCandidates.filter(candidate => {
@@ -229,6 +304,12 @@ export async function GET(request: NextRequest) {
             return (a.education?.highest_level || '').localeCompare(b.education?.highest_level || '');
           case 'experience':
             return (b.work_experiences?.length || 0) - (a.work_experiences?.length || 0);
+          case 'topSchools':
+            // Sort by top schools first (true values come first), then by name for tie-breaking
+            if (a.isTopSchool !== b.isTopSchool) {
+              return a.isTopSchool ? -1 : 1;
+            }
+            return (a.name || '').localeCompare(b.name || '');
           default:
             return 0;
         }

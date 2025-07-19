@@ -173,7 +173,7 @@ export const FilterPanel = () => {
           <label className="text-sm font-medium text-foreground">
             Work Availability
           </label>
-          <div className="space-y-2">
+          <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="full-time"
@@ -244,37 +244,78 @@ export const FilterPanel = () => {
           />
         </div>
 
-        {/* Education Filter */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">
-            Education
-          </label>
-          <Select
-            value={localFilters.educationLevel}
-            onValueChange={(value) =>
-              handleFilterChange("educationLevel", value)
-            }
-          >
-            <SelectTrigger className="bg-background border-border cursor-pointer">
-              <SelectValue placeholder="Select education level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Levels</SelectItem>
-              <SelectItem value="High School Diploma">
-                High School Diploma
-              </SelectItem>
-              <SelectItem value="Bachelor's Degree">
-                Bachelor&apos;s Degree
-              </SelectItem>
-              <SelectItem value="Master's Degree">
-                Master&apos;s Degree
-              </SelectItem>
-              <SelectItem value="Doctorate">Doctorate</SelectItem>
-              <SelectItem value="Juris Doctor (J.D)">
-                Juris Doctor (J.D)
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Education and Sort By Row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Education
+            </label>
+            <Select
+              value={localFilters.educationLevel}
+              onValueChange={(value) =>
+                handleFilterChange("educationLevel", value)
+              }
+            >
+              <SelectTrigger className="bg-background border-border cursor-pointer w-full">
+                <SelectValue
+                  placeholder="Select education level"
+                  className="truncate"
+                />
+              </SelectTrigger>
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={4}
+                avoidCollisions={false}
+              >
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="High School Diploma">
+                  High School Diploma
+                </SelectItem>
+                <SelectItem value="Bachelor's Degree">
+                  Bachelor&apos;s Degree
+                </SelectItem>
+                <SelectItem value="Master's Degree">
+                  Master&apos;s Degree
+                </SelectItem>
+                <SelectItem value="Doctorate">Doctorate</SelectItem>
+                <SelectItem value="Juris Doctor (J.D)">
+                  Juris Doctor (J.D)
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Sort By
+            </label>
+            <Select
+              value={localFilters.sortBy}
+              onValueChange={(value) => handleFilterChange("sortBy", value)}
+            >
+              <SelectTrigger className="bg-background border-border cursor-pointer w-full">
+                <SelectValue className="truncate" />
+              </SelectTrigger>
+              <SelectContent
+                position="popper"
+                side="bottom"
+                align="start"
+                sideOffset={4}
+                avoidCollisions={false}
+              >
+                <SelectItem value="matchScore">Match Score</SelectItem>
+                <SelectItem value="date">Date Applied</SelectItem>
+                <SelectItem value="salary">Salary</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="experience">
+                  Experience (Job Count)
+                </SelectItem>
+                <SelectItem value="topSchools">Top Schools</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Degree Subject Filter */}
@@ -316,33 +357,11 @@ export const FilterPanel = () => {
             className="w-full"
           />
         </div>
-
-        {/* Sort By */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Sort By</label>
-          <Select
-            value={localFilters.sortBy}
-            onValueChange={(value) => handleFilterChange("sortBy", value)}
-          >
-            <SelectTrigger className="bg-background border-border cursor-pointer">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="matchScore">Match Score</SelectItem>
-              <SelectItem value="date">Date Applied</SelectItem>
-              <SelectItem value="salary">Salary</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="location">Location</SelectItem>
-              <SelectItem value="education">Education Level</SelectItem>
-              <SelectItem value="experience">Experience (Job Count)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       <Button
         onClick={applyFilters}
-        disabled={!hasLocalChanges || isFilterApplied}
+        disabled={!hasLocalChanges && isFilterApplied}
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isFilterApplied ? "Filters Applied" : "Apply Filters"}

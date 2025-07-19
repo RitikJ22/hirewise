@@ -32,13 +32,29 @@ export const useAppStore = create<AppState>((set, get) => ({
   shortlistedCandidates: [],
   isFilterApplied: false,
   setFilters: (newFilters) =>
-    set((state) => ({
-      filters: { ...state.filters, ...newFilters, page: 1 }, // Reset page when filters change
-    })),
+    set((state) => {
+      const updatedFilters = { ...state.filters, ...newFilters, page: 1 };
+      
+      // Check if all filters are cleared (back to default state)
+      const hasAnyFilters = updatedFilters.skills !== '' || 
+                           updatedFilters.workAvailability.length > 0 ||
+                           updatedFilters.minSalary !== 45000 || 
+                           updatedFilters.maxSalary !== 150000 || 
+                           updatedFilters.location !== '' ||
+                           updatedFilters.roleName !== '' ||
+                           updatedFilters.company !== '' ||
+                           updatedFilters.educationLevel !== 'all' ||
+                           updatedFilters.degreeSubject !== '';
+      
+      return {
+        filters: updatedFilters,
+        isFilterApplied: hasAnyFilters ? state.isFilterApplied : false, // Reset if no filters
+      };
+    }),
   applyFilters: () =>
     set((state) => ({
       isFilterApplied: true,
-      filters: { ...state.filters, sortBy: 'matchScore' }, // Switch to match score when filters applied
+      filters: { ...state.filters }, // Keep the current sortBy selection
     })),
   clearFilters: () =>
     set(() => ({
