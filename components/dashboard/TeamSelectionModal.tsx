@@ -238,9 +238,9 @@ export const TeamSelectionModal = ({
                         className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
                       >
                         <div className="flex items-center space-x-2">
-                          <Badge variant="outline" className="text-xs">
-                            {index + 1}
-                          </Badge>
+                          <div className="p-1 bg-primary/10 rounded-full">
+                            <Users className="h-3 w-3 text-primary" />
+                          </div>
                           <span className="text-sm font-medium text-foreground">
                             {candidate.name ||
                               candidate.email ||
