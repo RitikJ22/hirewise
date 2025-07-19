@@ -7,11 +7,11 @@ export const metadata: Metadata = {
   description: "AI-powered candidate filtering and selection platform",
 };
 
-export const RootLayout = ({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) => {
+}>) {
   return (
     <html lang="en" className="dark">
       <body className="font-sans antialiased bg-background text-foreground">
@@ -21,5 +21,3 @@ export const RootLayout = ({
     </html>
   );
 }
-
-export default RootLayout;
