@@ -27,11 +27,7 @@ const Home = () => {
 
           {/* Candidate Grid - Scrollable */}
           <div className="flex-1 min-w-0">
-            <div className="h-full overflow-y-auto p-6 scrollbar-hide">
-              <Suspense fallback={<CandidateGridSkeleton />}>
-                <CandidateGrid />
-              </Suspense>
-            </div>
+            <CandidateGrid />
           </div>
 
           {/* Shortlist Panel - Fixed */}

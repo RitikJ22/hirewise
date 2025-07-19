@@ -1,28 +1,25 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Candidate } from "@/lib/types";
 import { useAppStore } from "@/lib/store";
 import { RefreshCw, AlertCircle, Users, X } from "lucide-react";
 import { Toast } from "@/lib/toast";
 import { CandidateCard } from "./CandidateCard";
+import { CandidateCardSkeleton } from "@/components/skeletons/CandidateCardSkeleton";
 import { BackToTop } from "@/components/ui/back-to-top";
 
 export const CandidateGrid = () => {
   const { filters, isFilterApplied } = useAppStore();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const observer = useRef<IntersectionObserver | null>(null);
-  const loadingRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingPage, setLoadingPage] = useState(false);
 
   const fetchCandidates = useCallback(
     async (pageNum: number, reset: boolean = false) => {
@@ -30,7 +27,7 @@ export const CandidateGrid = () => {
         if (reset) {
           setLoading(true);
         } else {
-          setLoadingMore(true);
+          setLoadingPage(true);
         }
         setError(null);
 
@@ -57,15 +54,10 @@ export const CandidateGrid = () => {
 
         const data = await response.json();
 
-        if (reset) {
-          setCandidates(data.candidates);
-          setTotal(data.total);
-        } else {
-          setCandidates((prev) => [...prev, ...data.candidates]);
-        }
-
-        setHasMore(data.hasMore);
-        setPage(pageNum);
+        setCandidates(data.candidates);
+        setTotal(data.total);
+        setCurrentPage(pageNum);
+        setTotalPages(Math.ceil(data.total / 10));
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "An error occurred";
@@ -76,35 +68,20 @@ export const CandidateGrid = () => {
         );
       } finally {
         setLoading(false);
-        setLoadingMore(false);
+        setLoadingPage(false);
       }
     },
     [filters, isFilterApplied]
   );
 
   useEffect(() => {
-    setPage(1);
+    setLoading(true); // Set loading immediately when filters change
+    setCurrentPage(1);
     setCandidates([]);
     setTotal(0);
+    setTotalPages(1);
     fetchCandidates(1, true);
   }, [filters, fetchCandidates]);
-
-  const lastElementRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (loading || loadingMore) return;
-
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
-          fetchCandidates(page + 1);
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [loading, loadingMore, hasMore, page, fetchCandidates]
-  );
 
   const handleRetry = () => {
     fetchCandidates(1, true);
@@ -112,7 +89,10 @@ export const CandidateGrid = () => {
 
   const handleRefresh = () => {
     fetchCandidates(1, true);
-    Toast.loading("Refreshing candidates", "Loading the latest candidate data...");
+    Toast.loading(
+      "Refreshing candidates",
+      "Loading the latest candidate data..."
+    );
   };
 
   const getActiveFilters = () => {
@@ -239,77 +219,106 @@ export const CandidateGrid = () => {
   }
 
   return (
-    <div className="space-y-6 relative">
+    <div className="flex flex-col h-full px-5 pt-6 pb-4">
       <BackToTop />
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Users className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold text-foreground">
-            {getActiveFilters().length > 0
-              ? "Filtered Candidates"
-              : "All Candidates"}
-          </h2>
-          {total > 0 && (
-            <span className="text-sm text-muted-foreground">
-              ({candidates.length} of {total} shown)
-            </span>
-          )}
-          {getActiveFilters().length > 0 && (
-            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-              Filter Applied
-            </span>
-          )}
+
+      {/* Fixed Header Section */}
+      <div className="flex-shrink-0 space-y-4 pb-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Users className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold text-foreground">
+              {getActiveFilters().length > 0
+                ? "Filtered Candidates"
+                : "All Candidates"}
+            </h2>
+            {total > 0 && (
+              <span className="text-sm text-muted-foreground">
+                ({candidates.length} of {total} shown)
+              </span>
+            )}
+            {getActiveFilters().length > 0 && (
+              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                Filter Applied
+              </span>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={loading}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <RefreshCw
-            className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </Button>
+
+        {/* Active Filter Tags */}
+        {getActiveFilters().length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-wrap gap-2"
+          >
+            {getActiveFilters().map((filter) => (
+              <motion.div
+                key={filter.key}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="flex items-center space-x-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm border border-primary/20"
+              >
+                <span className="text-xs">{filter.label}</span>
+                <button
+                  onClick={() => handleRemoveFilter(filter.key)}
+                  className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                  title={`Remove ${filter.label}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
 
-      {/* Active Filter Tags */}
-      {getActiveFilters().length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap gap-2"
-        >
-          {getActiveFilters().map((filter) => (
-            <motion.div
-              key={filter.key}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex items-center space-x-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm border border-primary/20"
-            >
-              <span className="text-xs">{filter.label}</span>
-              <button
-                onClick={() => handleRemoveFilter(filter.key)}
-                className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
-                title={`Remove ${filter.label}`}
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </motion.div>
-          ))}
-        </motion.div>
-      )}
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto min-h-0 space-y-2 scrollbar-hide">
+        {/* Show shimmer during any loading state */}
+        {(loading || loadingPage) && (
+          <>
+            {[...Array(6)].map((_, index) => (
+              <CandidateCardSkeleton key={`loading-${index}`} />
+            ))}
+          </>
+        )}
 
-      {/* Candidate Grid */}
-      <AnimatePresence mode="wait">
-        {candidates.length === 0 && !loading ? (
+        {/* Show candidates when not loading */}
+        {candidates.length > 0 && !loading && !loadingPage && (
+          <AnimatePresence mode="wait">
+            {candidates.map((candidate, index) => (
+              <motion.div
+                key={`${candidate.name}-${candidate.email}-${candidate.phone}-${currentPage}-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <CandidateCard candidate={candidate} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
+
+        {/* No Results State */}
+        {candidates.length === 0 && !loading && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             className="text-center py-12"
           >
             <Users className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -324,106 +333,124 @@ export const CandidateGrid = () => {
               Refresh
             </Button>
           </motion.div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4">
-            <AnimatePresence>
-              {candidates.map((candidate, index) => (
-                <motion.div
-                  key={`${candidate.name}-${candidate.email}-${candidate.phone}-${index}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  ref={
-                    index === candidates.length - 1 ? lastElementRef : undefined
-                  }
-                >
-                  <CandidateCard candidate={candidate} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {/* Loading More Spinner */}
-            {loadingMore && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="col-span-2 flex justify-center py-8"
-              >
-                <div className="flex items-center space-x-2">
-                  <RefreshCw className="h-5 w-5 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">
-                    Loading more candidates...
-                  </span>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Loading Skeleton */}
-            {loading && (
-              <>
-                {[...Array(4)].map((_, index) => (
-                  <Card key={index} className="bg-card border-border">
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2 flex-1">
-                          <Skeleton className="h-5 w-32" />
-                          <Skeleton className="h-4 w-48" />
-                        </div>
-                        <Skeleton className="h-8 w-8 rounded-full" />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex space-x-2">
-                          <Skeleton className="h-3 w-16" />
-                          <Skeleton className="h-3 w-20" />
-                        </div>
-                        <Skeleton className="h-4 w-20" />
-                        <div className="space-y-1">
-                          <Skeleton className="h-3 w-24" />
-                          <Skeleton className="h-3 w-32" />
-                        </div>
-                        <div className="flex space-x-1">
-                          <Skeleton className="h-5 w-12 rounded-full" />
-                          <Skeleton className="h-5 w-14 rounded-full" />
-                          <Skeleton className="h-5 w-10 rounded-full" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </>
-            )}
-          </div>
         )}
-      </AnimatePresence>
+      </div>
 
-      {/* Load More Indicator */}
-      {hasMore && candidates.length > 0 && (
-        <div ref={loadingRef} className="text-center py-4">
-          {loading ? (
-            <div className="flex items-center justify-center space-x-2">
-              <RefreshCw className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">
-                Loading more candidates...
-              </span>
+      {/* Fixed Bottom Pagination */}
+      {totalPages > 1 && candidates.length > 0 && (
+        <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border">
+          <div className="flex items-center justify-between py-5 px-6">
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages} • {total} total candidates
             </div>
-          ) : (
-            <Skeleton className="h-4 w-32 mx-auto" />
-          )}
-        </div>
-      )}
 
-      {/* End of Results */}
-      {!hasMore && candidates.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-4"
-        >
-          <p className="text-sm text-muted-foreground">
-            You&apos;ve reached the end of the results
-          </p>
-        </motion.div>
+            {/* Pagination Controls */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fetchCandidates(currentPage - 1)}
+                disabled={currentPage === 1 || loadingPage}
+                className="flex items-center space-x-1"
+              >
+                <span>←</span>
+                <span>Previous</span>
+              </Button>
+
+              <div className="flex items-center space-x-1">
+                {(() => {
+                  const maxVisible = 5;
+                  let startPage = 1;
+                  let endPage = Math.min(maxVisible, totalPages);
+
+                  // If we're past the first few pages, show a window around current page
+                  if (currentPage > 3) {
+                    startPage = Math.max(1, currentPage - 2);
+                    endPage = Math.min(totalPages, currentPage + 2);
+                  }
+
+                  // If we're near the end, adjust to show the last few pages
+                  if (endPage === totalPages && totalPages > maxVisible) {
+                    startPage = Math.max(1, totalPages - maxVisible + 1);
+                  }
+
+                  const pages = [];
+                  for (let i = startPage; i <= endPage; i++) {
+                    pages.push(i);
+                  }
+
+                  return (
+                    <>
+                      {startPage > 1 && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fetchCandidates(1)}
+                            disabled={loadingPage}
+                            className="w-8 h-8 p-0"
+                          >
+                            1
+                          </Button>
+                          {startPage > 2 && (
+                            <span className="text-muted-foreground px-2">
+                              ...
+                            </span>
+                          )}
+                        </>
+                      )}
+
+                      {pages.map((pageNum) => (
+                        <Button
+                          key={pageNum}
+                          variant={
+                            currentPage === pageNum ? "default" : "outline"
+                          }
+                          size="sm"
+                          onClick={() => fetchCandidates(pageNum)}
+                          disabled={loadingPage}
+                          className="w-8 h-8 p-0"
+                        >
+                          {pageNum}
+                        </Button>
+                      ))}
+
+                      {endPage < totalPages && (
+                        <>
+                          {endPage < totalPages - 1 && (
+                            <span className="text-muted-foreground px-2">
+                              ...
+                            </span>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fetchCandidates(totalPages)}
+                            disabled={loadingPage}
+                            className="w-8 h-8 p-0"
+                          >
+                            {totalPages}
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fetchCandidates(currentPage + 1)}
+                disabled={currentPage === totalPages || loadingPage}
+                className="flex items-center space-x-1"
+              >
+                <span>Next</span>
+                <span>→</span>
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
