@@ -1,9 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Candidate } from "@/lib/types";
+import { useAppStore } from "@/lib/store";
 import {
   Users,
   DollarSign,
@@ -24,6 +27,8 @@ export default function TeamAnalytics({
   candidates,
   hasFilters = false,
 }: TeamAnalyticsProps) {
+  const { openTeamModal } = useAppStore();
+
   if (candidates.length === 0) {
     return (
       <motion.div
@@ -96,102 +101,135 @@ export default function TeamAnalytics({
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">
-          Team Analytics
-        </h3>
-        <Badge variant="secondary" className="bg-primary/20 text-primary">
-          {candidates.length} selected
-        </Badge>
-      </div>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-6"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-foreground">
+            Team Analytics
+          </h3>
+          <Badge variant="secondary" className="bg-primary/20 text-primary">
+            {candidates.length} selected
+          </Badge>
+        </div>
 
-      {/* Main Stats */}
-      <div className="grid grid-cols-2 gap-3">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.title}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-          >
-            <Card className="bg-card border-border h-full hover:border-primary/20 transition-colors">
-              <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center">
-                <div
-                  className={`p-3 rounded-lg ${stat.bgColor} flex-shrink-0 mb-3`}
+        {/* Main Stats */}
+        <div className="grid grid-cols-2 gap-3">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card className="bg-card border-border h-full hover:border-primary/20 transition-colors">
+                <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center">
+                  <div
+                    className={`p-3 rounded-lg ${stat.bgColor} flex-shrink-0 mb-3`}
+                  >
+                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                  </div>
+                  <div className="space-y-1 w-full">
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {stat.title}
+                    </p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {stat.value}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Average Match Score - Only show when filters are applied */}
+        {hasFilters && (
+          <Card className="bg-card border-border hover:border-primary/20 transition-colors">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    <p className="text-sm text-muted-foreground font-medium">
+                      Average Match Score
+                    </p>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">
+                    {avgMatchScore.toFixed(0)}%
+                  </p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-primary font-bold text-lg">
+                    {avgMatchScore.toFixed(0)}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Skills Distribution */}
+        <div className="space-y-4">
+          <h4 className="text-sm font-semibold text-foreground">Top Skills</h4>
+          <div className="space-y-3">
+            {getTopSkills(candidates)
+              .slice(0, 5)
+              .map((skill, index) => (
+                <motion.div
+                  key={skill.name}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="flex items-center justify-between"
                 >
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-                <div className="space-y-1 w-full">
-                  <p className="text-xs text-muted-foreground font-medium">
-                    {stat.title}
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">
-                    {stat.value}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+                  <span className="text-sm text-muted-foreground truncate flex-1">
+                    {skill.name}
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className="text-xs ml-2 flex-shrink-0"
+                  >
+                    {skill.count}
+                  </Badge>
+                </motion.div>
+              ))}
+          </div>
+        </div>
 
-      {/* Average Match Score - Only show when filters are applied */}
-      {hasFilters && (
-        <Card className="bg-card border-border hover:border-primary/20 transition-colors">
-          <CardContent className="p-4">
+        {/* Export Team Message */}
+        {candidates.length === 5 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-primary/10 border border-primary/20 rounded-lg p-4"
+          >
             <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center space-x-2">
-                  <Target className="h-5 w-5 text-primary" />
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Average Match Score
-                  </p>
-                </div>
-                <p className="text-2xl font-bold text-foreground">
-                  {avgMatchScore.toFixed(0)}%
+              <div>
+                <p className="text-sm font-medium text-primary">
+                  🎉 Your dream team is ready!
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Export your team data via email or PDF
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <span className="text-primary font-bold text-lg">
-                  {avgMatchScore.toFixed(0)}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Skills Distribution */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-semibold text-foreground">Top Skills</h4>
-        <div className="space-y-3">
-          {getTopSkills(candidates)
-            .slice(0, 5)
-            .map((skill, index) => (
-              <motion.div
-                key={skill.name}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="flex items-center justify-between"
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={openTeamModal}
+                className="text-xs"
               >
-                <span className="text-sm text-muted-foreground truncate flex-1">
-                  {skill.name}
-                </span>
-                <Badge variant="outline" className="text-xs ml-2 flex-shrink-0">
-                  {skill.count}
-                </Badge>
-              </motion.div>
-            ))}
-        </div>
-      </div>
-    </motion.div>
+                Export Team Data
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+    </>
   );
 }
 

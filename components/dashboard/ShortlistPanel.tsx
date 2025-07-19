@@ -190,14 +190,32 @@ export const ShortlistPanel = () => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-primary/10 border border-primary/20 rounded-lg p-3"
+            className={`rounded-lg p-3 ${
+              shortlistedCandidates.length === 5
+                ? "bg-green-500/10 border border-green-500/20"
+                : "bg-primary/10 border border-primary/20"
+            }`}
           >
-            <p className="text-sm text-primary font-medium">
-              Maximum 5 candidates selected
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Remove a candidate to add a new one
-            </p>
+            {shortlistedCandidates.length === 5 ? (
+              <>
+                <p className="text-sm text-green-600 font-medium">
+                  🎉 Your dream team is complete!
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use the Export PDF button in the header to download your team
+                  data
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-primary font-medium">
+                  Maximum 5 candidates selected
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Remove a candidate to add a new one
+                </p>
+              </>
+            )}
           </motion.div>
         )}
       </div>

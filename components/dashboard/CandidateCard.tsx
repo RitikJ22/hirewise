@@ -264,7 +264,6 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
 
                 {/* Salary */}
                 <div className="flex items-center space-x-2">
-                  <DollarSign className="h-3 w-3 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
                     {formatSalary(candidate.salaryNumeric || 0)}
                   </span>
