@@ -242,7 +242,7 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
             {/* Always Visible Info - Single Row */}
             <div className="flex gap-4 flex-shrink-0">
               {/* Left Side - Basic Info */}
-              <div className="w-48 space-y-3">
+              <div className="w-56 space-y-3">
                 {/* Location and Availability */}
                 <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                   <div className="flex items-center space-x-1">
@@ -254,10 +254,10 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
                   <div className="flex items-center space-x-1">
                     <Briefcase className="h-3 w-3" />
                     <span className="truncate">
-                      {getValueOrDash(
-                        candidate.work_availability?.[0],
-                        "Unknown"
-                      )}
+                      {candidate.work_availability &&
+                      candidate.work_availability.length > 0
+                        ? candidate.work_availability.join(", ")
+                        : "Unknown"}
                     </span>
                   </div>
                 </div>
