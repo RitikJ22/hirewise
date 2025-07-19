@@ -336,7 +336,7 @@ export const CandidateGrid = () => {
       {/* Fixed Bottom Pagination */}
       {totalPages > 1 && candidates.length > 0 && (
         <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border">
-          <div className="flex items-center justify-between py-5 px-6">
+          <div className="flex items-center justify-between pt-5 px-6">
             <div className="text-sm text-muted-foreground">
               Page {currentPage} of {totalPages} • {total} total candidates
             </div>
