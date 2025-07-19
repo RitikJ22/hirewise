@@ -16,6 +16,7 @@ import {
   CheckCircle,
   Send,
   FileText,
+  MapPin,
 } from "lucide-react";
 
 interface TeamSelectionModalProps {
@@ -246,9 +247,12 @@ export const TeamSelectionModal = ({
                               "Unknown Candidate"}
                           </span>
                         </div>
-                        <span className="text-xs text-muted-foreground">
-                          {candidate.location || candidate.email || "Unknown"}
-                        </span>
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {candidate.location || candidate.email || "Unknown"}
+                          </span>
+                        </div>
                       </motion.div>
                     ))}
                   </div>

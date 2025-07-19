@@ -200,34 +200,6 @@ export default function TeamAnalytics({
               ))}
           </div>
         </div>
-
-        {/* Export Team Message */}
-        {candidates.length === 5 && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-primary/10 border border-primary/20 rounded-lg p-4"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-primary">
-                  🎉 Your dream team is ready!
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Export your team data via email or PDF
-                </p>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={openTeamModal}
-                className="text-xs"
-              >
-                Export Team Data
-              </Button>
-            </div>
-          </motion.div>
-        )}
       </motion.div>
     </>
   );
