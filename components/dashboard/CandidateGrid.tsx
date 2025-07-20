@@ -230,16 +230,16 @@ export const CandidateGrid = () => {
       {/* Fixed Header Section */}
       <div className="flex-shrink-0 space-y-4 pb-4">
         {/* Header */}
-        <div className="flex items-center justify-between px-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-5">
           <div className="flex items-center space-x-2">
             <Users className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold text-foreground">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
               {getActiveFilters().length > 0
                 ? "Filtered Candidates"
                 : "All Candidates"}
             </h2>
             {total > 0 && (
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 ({candidates.length} of {total} shown)
               </span>
             )}
@@ -254,7 +254,7 @@ export const CandidateGrid = () => {
             size="sm"
             onClick={handleRefresh}
             disabled={loading}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground w-full sm:w-auto"
           >
             <RefreshCw
               className={clsx("h-4 w-4 mr-2", {
@@ -270,7 +270,7 @@ export const CandidateGrid = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-wrap gap-2"
+            className="flex flex-wrap gap-2 px-4 sm:px-5"
           >
             {getActiveFilters().map((filter) => (
               <motion.div
@@ -278,7 +278,7 @@ export const CandidateGrid = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="flex items-center space-x-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm border border-primary/20"
+                className="flex items-center space-x-1 bg-primary/10 text-primary px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm border border-primary/20"
               >
                 <span className="text-xs">{filter.label}</span>
                 <button
@@ -295,7 +295,7 @@ export const CandidateGrid = () => {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto min-h-0 space-y-2 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto min-h-0 space-y-2 scrollbar-hide px-2 sm:px-5">
         {/* Show shimmer during any loading state */}
         {(loading || loadingPage) && (
           <>
@@ -341,32 +341,37 @@ export const CandidateGrid = () => {
             </Button>
           </motion.div>
         )}
+
+        {/* Add bottom padding when no pagination to prevent overlap with floating buttons */}
+        {totalPages <= 1 && candidates.length > 0 && (
+          <div className="h-20 lg:hidden" />
+        )}
       </div>
 
       {/* Fixed Bottom Pagination */}
       {totalPages > 1 && candidates.length > 0 && (
         <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border">
-          <div className="flex items-center justify-between pt-5 px-6">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 sm:pt-5 px-4 sm:px-6 pb-12 lg:pb-4">
+            <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
               Page {currentPage} of {totalPages} • {total} total candidates
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center sm:justify-end space-x-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => fetchCandidates(currentPage - 1)}
                 disabled={currentPage === 1 || loadingPage}
-                className="flex items-center space-x-1"
+                className="flex items-center space-x-1 text-xs"
               >
                 <span>←</span>
-                <span>Previous</span>
+                <span className="hidden sm:inline">Previous</span>
               </Button>
 
               <div className="flex items-center space-x-1">
                 {(() => {
-                  const maxVisible = 5;
+                  const maxVisible = window.innerWidth < 640 ? 3 : 5; // Show fewer pages on mobile
                   let startPage = 1;
                   let endPage = Math.min(maxVisible, totalPages);
 
@@ -388,19 +393,19 @@ export const CandidateGrid = () => {
 
                   return (
                     <>
-                      {startPage > 1 && (
+                      {startPage > 1 && window.innerWidth >= 640 && (
                         <>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => fetchCandidates(1)}
                             disabled={loadingPage}
-                            className="w-8 h-8 p-0"
+                            className="w-8 h-8 p-0 text-xs"
                           >
                             1
                           </Button>
                           {startPage > 2 && (
-                            <span className="text-muted-foreground px-2">
+                            <span className="text-muted-foreground px-1 sm:px-2 text-xs">
                               ...
                             </span>
                           )}
@@ -416,16 +421,16 @@ export const CandidateGrid = () => {
                           size="sm"
                           onClick={() => fetchCandidates(pageNum)}
                           disabled={loadingPage}
-                          className="w-8 h-8 p-0"
+                          className="w-8 h-8 p-0 text-xs"
                         >
                           {pageNum}
                         </Button>
                       ))}
 
-                      {endPage < totalPages && (
+                      {endPage < totalPages && window.innerWidth >= 640 && (
                         <>
                           {endPage < totalPages - 1 && (
-                            <span className="text-muted-foreground px-2">
+                            <span className="text-muted-foreground px-1 sm:px-2 text-xs">
                               ...
                             </span>
                           )}
@@ -434,7 +439,7 @@ export const CandidateGrid = () => {
                             size="sm"
                             onClick={() => fetchCandidates(totalPages)}
                             disabled={loadingPage}
-                            className="w-8 h-8 p-0"
+                            className="w-8 h-8 p-0 text-xs"
                           >
                             {totalPages}
                           </Button>
@@ -450,11 +455,22 @@ export const CandidateGrid = () => {
                 size="sm"
                 onClick={() => fetchCandidates(currentPage + 1)}
                 disabled={currentPage === totalPages || loadingPage}
-                className="flex items-center space-x-1"
+                className="flex items-center space-x-1 text-xs"
               >
-                <span>Next</span>
+                <span className="hidden sm:inline">Next</span>
                 <span>→</span>
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Show candidate count when no pagination */}
+      {totalPages <= 1 && candidates.length > 0 && (
+        <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 sm:pt-5 px-4 sm:px-6 pb-12 lg:pb-4">
+            <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+              {total} total candidates
             </div>
           </div>
         </div>

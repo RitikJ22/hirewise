@@ -23,7 +23,21 @@ interface AppState {
   toggleRightPanel: () => void;
   setLeftPanelExpanded: (expanded: boolean) => void;
   setRightPanelExpanded: (expanded: boolean) => void;
+  expandedCardId: string | null;
+  setExpandedCard: (cardId: string | null) => void;
 }
+
+// Helper function to detect mobile device (SSR-safe)
+const isMobileDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 1024;
+};
+
+// Helper function to detect if panels should start closed on mobile
+const shouldPanelsStartClosed = () => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 1024;
+};
 
 export const useAppStore = create<AppState>((set, get) => ({
   filters: {
@@ -43,9 +57,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   shortlistedCandidates: [],
   isFilterApplied: false,
   showTeamModal: false,
-  // Panel state - default to expanded
-  isLeftPanelExpanded: true,
-  isRightPanelExpanded: true,
+  // Panel state - default to expanded on desktop, closed on mobile
+  isLeftPanelExpanded: !shouldPanelsStartClosed(),
+  isRightPanelExpanded: !shouldPanelsStartClosed(),
+  expandedCardId: null,
   setFilters: (newFilters) =>
     set((state) => {
       const updatedFilters = { ...state.filters, ...newFilters, page: 1 };
@@ -126,4 +141,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   toggleRightPanel: () => set((state) => ({ isRightPanelExpanded: !state.isRightPanelExpanded })),
   setLeftPanelExpanded: (expanded) => set({ isLeftPanelExpanded: expanded }),
   setRightPanelExpanded: (expanded) => set({ isRightPanelExpanded: expanded }),
+  setExpandedCard: (cardId: string | null) => {
+    set({ expandedCardId: cardId });
+  },
 })); 

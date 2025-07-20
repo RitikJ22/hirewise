@@ -15,6 +15,7 @@ import { Slider } from "@/components/ui/slider";
 import { useAppStore } from "@/lib/store";
 import { Toast } from "@/lib/toast";
 import { Checkbox } from "../ui/checkbox";
+import { useResponsive } from "@/lib/hooks/useResponsive";
 
 export const FilterPanel = () => {
   const {
@@ -24,7 +25,12 @@ export const FilterPanel = () => {
     clearFilters: clearStoreFilters,
     isFilterApplied,
     hasFilterChanges,
+    isLeftPanelExpanded,
+    setLeftPanelExpanded,
   } = useAppStore();
+
+  const { isMobile } = useResponsive();
+
   const [localFilters, setLocalFilters] = useState(filters);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
@@ -113,6 +119,11 @@ export const FilterPanel = () => {
         "Showing all candidates without filters."
       );
     }
+
+    // Close filter panel on mobile after applying filters
+    if (isMobile) {
+      setLeftPanelExpanded(false);
+    }
   };
 
   const resetFilters = () => {
@@ -133,6 +144,11 @@ export const FilterPanel = () => {
     });
     setHasLocalChanges(false);
     Toast.remove("Filters cleared", "Showing all candidates without filters.");
+
+    // Close filter panel on mobile after clearing filters
+    if (isMobile) {
+      setLeftPanelExpanded(false);
+    }
   };
 
   return (
@@ -140,23 +156,25 @@ export const FilterPanel = () => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
     >
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-foreground">Filters</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+          Filters
+        </h2>
         {isFilterApplied && (
           <Button
             variant="outline"
             size="sm"
             onClick={resetFilters}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground w-full sm:w-auto"
           >
             Clear Filters
           </Button>
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {/* Skills Filter */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">Skills</label>
@@ -173,7 +191,7 @@ export const FilterPanel = () => {
           <label className="text-sm font-medium text-foreground">
             Work Availability
           </label>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="full-time"
@@ -245,7 +263,7 @@ export const FilterPanel = () => {
         </div>
 
         {/* Education and Sort By Row */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               Education

@@ -121,6 +121,40 @@
   }
 }
 
+/* Mobile-specific styles */
+@media (max-width: 640px) {
+  /* Prevent horizontal scroll on mobile */
+  html, body {
+    overflow-x: hidden;
+  }
+  
+  /* Improve touch targets */
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Smooth scrolling for mobile */
+  .scrollbar-hide {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  
+  /* Better tap highlights */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Improve bottom sheet interactions */
+  .bottom-sheet {
+    touch-action: pan-y;
+  }
+}
+
 /* Toast Animations */
 @keyframes slideInRight {
   from {
