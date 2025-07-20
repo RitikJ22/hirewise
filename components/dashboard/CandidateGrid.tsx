@@ -270,7 +270,7 @@ export const CandidateGrid = () => {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-wrap gap-2"
+            className="flex flex-wrap gap-2 mx-5"
           >
             {getActiveFilters().map((filter) => (
               <motion.div
