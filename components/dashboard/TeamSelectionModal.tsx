@@ -179,7 +179,7 @@ export const TeamSelectionModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="w-full max-w-2xl max-h-[95vh] overflow-hidden"
+            className="w-full max-w-2xl max-h-[96vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <Card className="bg-card border-border shadow-xl">
