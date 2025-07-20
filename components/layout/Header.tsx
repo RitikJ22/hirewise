@@ -21,7 +21,7 @@ const Header = () => {
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Logo size="sm" className="sm:hidden" />
             <Logo size="lg" className="hidden sm:block" />
-            <div className="space-y-0.5 sm:space-y-1">
+            <div className="space-y-0.5 sm:space-y-1 hidden sm:block">
               <h1 className="text-lg sm:text-2xl font-bold text-foreground">
                 Co-pilot
               </h1>

@@ -45,12 +45,12 @@ const Home = () => {
   }, [shortlistedCandidates.length, openTeamModal]);
 
   return (
-    <div className="h-screen bg-background flex flex-col">
+    <div className="min-h-screen h-dvh bg-background flex flex-col">
       {/* Header */}
       <Header />
 
       {/* Main Content */}
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden min-h-0">
         <div className="flex w-full relative">
           {/* Desktop: Filter Panel - Expandable Sidebar */}
           <AnimatePresence>
@@ -263,7 +263,10 @@ const Home = () => {
       </AnimatePresence>
 
       {/* Mobile/Tablet: Floating Action Buttons */}
-      <div className="lg:hidden fixed bottom-4 left-4 right-4 flex justify-between z-30">
+      <div
+        className="lg:hidden fixed bottom-4 left-4 right-4 flex justify-between z-30"
+        style={{ bottom: "env(safe-area-inset-bottom, 1rem)" }}
+      >
         {/* Filter Button */}
         <Button
           size="lg"

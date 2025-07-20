@@ -243,7 +243,7 @@ export const CandidateGrid = () => {
   }
 
   return (
-    <div className="flex flex-col h-full pt-6 pb-4">
+    <div className="flex flex-col h-full min-h-0 pt-6 pb-4">
       {/* Fixed Header Section */}
       <div className="flex-shrink-0 space-y-4 pb-4">
         {/* Header */}
