@@ -256,7 +256,7 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
                 <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                   <div className="flex items-center space-x-1">
                     <MapPin className="h-3 w-3" />
-                    <span className="truncate">
+                    <span className="truncate max-w-20">
                       {getValueOrDash(candidate.location, "Unknown")}
                     </span>
                   </div>
