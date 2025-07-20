@@ -1,4 +1,5 @@
 import React from "react";
+import clsx from "clsx";
 
 interface LogoProps {
   className?: string;
@@ -13,9 +14,14 @@ export function Logo({ className = "", size = "md" }: LogoProps) {
   };
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
+    <div className={clsx("flex items-center space-x-2", className)}>
       {/* HIREWISE Logo Image */}
-      <div className={`${sizeClasses[size]} flex items-center brightness-200 contrast-200`}>
+      <div
+        className={clsx(
+          sizeClasses[size],
+          "flex items-center brightness-200 contrast-200"
+        )}
+      >
         <img
           src="/Hirewise.png"
           alt="HIREWISE Logo"

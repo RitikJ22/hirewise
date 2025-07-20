@@ -1,14 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  RefreshCw,
+  Users,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Candidate } from "@/lib/types";
-import { useAppStore } from "@/lib/store";
-import { RefreshCw, AlertCircle, Users, X } from "lucide-react";
-import { Toast } from "@/lib/toast";
 import { CandidateCard } from "./CandidateCard";
 import { CandidateCardSkeleton } from "@/components/skeletons/CandidateCardSkeleton";
+import { useAppStore } from "@/lib/store";
+import { Candidate } from "@/lib/types";
+import clsx from "clsx";
+import { Toast } from "@/lib/toast";
 
 export const CandidateGrid = () => {
   const { filters, isFilterApplied } = useAppStore();
@@ -249,7 +257,9 @@ export const CandidateGrid = () => {
             className="text-muted-foreground hover:text-foreground"
           >
             <RefreshCw
-              className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+              className={clsx("h-4 w-4 mr-2", {
+                "animate-spin": loading,
+              })}
             />
             Refresh
           </Button>

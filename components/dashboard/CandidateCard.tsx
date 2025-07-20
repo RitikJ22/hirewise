@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Candidate } from "@/lib/types";
-import { useAppStore } from "@/lib/store";
 import {
-  Plus,
-  MapPin,
   Briefcase,
-  GraduationCap,
-  DollarSign,
-  Minus,
-  ChevronRight,
   ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  MapPin,
+  Minus,
+  Plus,
   User,
 } from "lucide-react";
+import { useAppStore } from "@/lib/store";
+import { Candidate } from "@/lib/types";
+import clsx from "clsx";
 import { Toast } from "@/lib/toast";
 
 interface CandidateCardProps {
@@ -169,11 +169,15 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
       className="w-full p-2"
     >
       <Card
-        className={`bg-card border-border transition-all duration-300 mx-5 ${
-          isExpanded ? "h-[350px]" : "h-[240px]"
-        } flex flex-col cursor-pointer ${
-          isShortlisted ? "border-primary" : "hover:border-border/80"
-        }`}
+        className={clsx(
+          "bg-card border-border transition-all duration-300 mx-5 flex flex-col cursor-pointer",
+          {
+            "h-[350px]": isExpanded,
+            "h-[240px]": !isExpanded,
+            "border-primary": isShortlisted,
+            "hover:border-border/80": !isShortlisted,
+          }
+        )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onBlur={handleCardBlur}
@@ -215,13 +219,14 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
                     : handleAddToShortlist
                 }
                 disabled={!isShortlisted && isMaxReached}
-                className={`${
-                  isShortlisted
-                    ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    : isMaxReached
-                    ? "bg-muted text-muted-foreground cursor-not-allowed"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
-                } flex-shrink-0`}
+                className={clsx("flex-shrink-0", {
+                  "bg-destructive text-destructive-foreground hover:bg-destructive/90":
+                    isShortlisted,
+                  "bg-muted text-muted-foreground cursor-not-allowed":
+                    !isShortlisted && isMaxReached,
+                  "bg-primary text-primary-foreground hover:bg-primary/90":
+                    !isShortlisted && !isMaxReached,
+                })}
                 title={
                   isShortlisted
                     ? "Remove from shortlist"

@@ -17,16 +17,17 @@ import {
   Briefcase,
   Target,
 } from "lucide-react";
+import clsx from "clsx";
 
 interface TeamAnalyticsProps {
   candidates: Candidate[];
   hasFilters?: boolean;
 }
 
-export default function TeamAnalytics({
+export const TeamAnalytics = ({
   candidates,
   hasFilters = false,
-}: TeamAnalyticsProps) {
+}: TeamAnalyticsProps) => {
   const { openTeamModal } = useAppStore();
 
   if (candidates.length === 0) {
@@ -129,9 +130,12 @@ export default function TeamAnalytics({
               <Card className="bg-card border-border h-full hover:border-primary/20 transition-colors">
                 <CardContent className="p-4 h-full flex flex-col items-center justify-center text-center">
                   <div
-                    className={`p-3 rounded-lg ${stat.bgColor} flex-shrink-0 mb-3`}
+                    className={clsx(
+                      "p-3 rounded-lg flex-shrink-0 mb-3",
+                      stat.bgColor
+                    )}
                   >
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                    <stat.icon className={clsx("h-5 w-5", stat.color)} />
                   </div>
                   <div className="space-y-1 w-full">
                     <p className="text-xs text-muted-foreground font-medium">
@@ -203,9 +207,9 @@ export default function TeamAnalytics({
       </motion.div>
     </>
   );
-}
+};
 
-function getTopSkills(candidates: Candidate[]) {
+const getTopSkills = (candidates: Candidate[]) => {
   const skillCounts: { [key: string]: number } = {};
 
   candidates.forEach((candidate) => {
@@ -217,4 +221,4 @@ function getTopSkills(candidates: Candidate[]) {
   return Object.entries(skillCounts)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
-}
+};
