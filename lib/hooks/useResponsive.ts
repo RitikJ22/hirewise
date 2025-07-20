@@ -36,8 +36,8 @@ export const useResponsive = () => {
   const getCardHeights = () => {
     if (isMobile) {
       return {
-        collapsed: 'h-[260px]',
-        expanded: 'h-[440px]' // Increased from 400px to 480px for small mobile
+        collapsed: 'h-[270px]',
+        expanded: 'h-[450px]' // Increased from 400px to 480px for small mobile
       };
     } else if (isTablet) {
       return {

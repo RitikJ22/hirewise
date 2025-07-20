@@ -676,25 +676,33 @@ export const CandidateCard = ({ candidate }: CandidateCardProps) => {
                     Skills
                   </span>
                   <div className="flex flex-wrap gap-1">
-                    {candidate.skills
-                      ?.slice(0, getSkillLimit())
-                      .map((skill, index) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          {truncateSkill(
-                            String(getValueOrDash(skill, "Unknown Skill"))
+                    {candidate.skills && candidate.skills.length > 0 ? (
+                      <>
+                        {candidate.skills
+                          ?.slice(0, getSkillLimit())
+                          .map((skill, index) => (
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {truncateSkill(
+                                String(getValueOrDash(skill, "Unknown Skill"))
+                              )}
+                            </Badge>
+                          ))}
+                        {candidate.skills &&
+                          candidate.skills.length > getSkillLimit() && (
+                            <Badge variant="outline" className="text-xs">
+                              +{candidate.skills.length - getSkillLimit()}
+                            </Badge>
                           )}
-                        </Badge>
-                      ))}
-                    {candidate.skills &&
-                      candidate.skills.length > getSkillLimit() && (
-                        <Badge variant="outline" className="text-xs">
-                          +{candidate.skills.length - getSkillLimit()}
-                        </Badge>
-                      )}
+                      </>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        No skills listed
+                      </span>
+                    )}
                   </div>
                 </div>
 

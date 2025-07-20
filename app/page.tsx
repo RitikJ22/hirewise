@@ -24,7 +24,18 @@ const Home = () => {
     isRightPanelExpanded,
     toggleLeftPanel,
     toggleRightPanel,
+    setLeftPanelExpanded,
+    setRightPanelExpanded,
   } = useAppStore();
+
+  // Initialize panel states after hydration (SSR-safe)
+  useEffect(() => {
+    const isDesktop = window.innerWidth >= 1024;
+    if (isDesktop) {
+      setLeftPanelExpanded(true);
+      setRightPanelExpanded(true);
+    }
+  }, [setLeftPanelExpanded, setRightPanelExpanded]);
 
   // Auto-open modal when 5 candidates are selected
   useEffect(() => {

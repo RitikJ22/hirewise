@@ -35,7 +35,7 @@ const isMobileDevice = () => {
 
 // Helper function to detect if panels should start closed on mobile
 const shouldPanelsStartClosed = () => {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined') return true; // Default to closed for SSR
   return window.innerWidth < 1024;
 };
 
@@ -57,9 +57,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   shortlistedCandidates: [],
   isFilterApplied: false,
   showTeamModal: false,
-  // Panel state - default to expanded on desktop, closed on mobile
-  isLeftPanelExpanded: !shouldPanelsStartClosed(),
-  isRightPanelExpanded: !shouldPanelsStartClosed(),
+  // Panel state - default to closed for SSR consistency, will be updated on client
+  isLeftPanelExpanded: false,
+  isRightPanelExpanded: false,
   expandedCardId: null,
   setFilters: (newFilters) =>
     set((state) => {

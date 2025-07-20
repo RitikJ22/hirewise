@@ -27,6 +27,23 @@ export const CandidateGrid = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loadingPage, setLoadingPage] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Handle window resize for responsive pagination
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    // Set initial value
+    checkIsMobile();
+
+    // Add event listener
+    window.addEventListener("resize", checkIsMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
 
   const fetchCandidates = useCallback(
     async (pageNum: number, reset: boolean = false) => {
@@ -231,30 +248,34 @@ export const CandidateGrid = () => {
       <div className="flex-shrink-0 space-y-4 pb-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-5">
-          <div className="flex items-center space-x-2">
-            <Users className="h-5 w-5 text-primary" />
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-              {getActiveFilters().length > 0
-                ? "Filtered Candidates"
-                : "All Candidates"}
-            </h2>
-            {total > 0 && (
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                ({candidates.length} of {total} shown)
-              </span>
-            )}
-            {getActiveFilters().length > 0 && (
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                Filter Applied
-              </span>
-            )}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
+            <div className="flex items-center space-x-2 min-w-0">
+              <Users className="h-5 w-5 text-primary flex-shrink-0" />
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground truncate">
+                {getActiveFilters().length > 0
+                  ? "Filtered Candidates"
+                  : "All Candidates"}
+              </h2>
+            </div>
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-wrap gap-1">
+              {total > 0 && (
+                <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                  ({candidates.length} of {total} shown)
+                </span>
+              )}
+              {getActiveFilters().length > 0 && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0">
+                  Filter Applied
+                </span>
+              )}
+            </div>
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={handleRefresh}
             disabled={loading}
-            className="text-muted-foreground hover:text-foreground w-full sm:w-auto"
+            className="text-muted-foreground hover:text-foreground w-full sm:w-auto flex-shrink-0"
           >
             <RefreshCw
               className={clsx("h-4 w-4 mr-2", {
@@ -278,12 +299,14 @@ export const CandidateGrid = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="flex items-center space-x-1 bg-primary/10 text-primary px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm border border-primary/20"
+                className="flex items-center space-x-1 bg-primary/10 text-primary px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm border border-primary/20 max-w-full"
               >
-                <span className="text-xs">{filter.label}</span>
+                <span className="text-xs truncate max-w-32 sm:max-w-none">
+                  {filter.label}
+                </span>
                 <button
                   onClick={() => handleRemoveFilter(filter.key)}
-                  className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                  className="ml-1 hover:bg-primary/20 rounded-full p-0.5 transition-colors flex-shrink-0"
                   title={`Remove ${filter.label}`}
                 >
                   <X className="h-3 w-3" />
@@ -351,19 +374,19 @@ export const CandidateGrid = () => {
       {/* Fixed Bottom Pagination */}
       {totalPages > 1 && candidates.length > 0 && (
         <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 sm:pt-5 px-4 sm:px-6 pb-12 lg:pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 sm:pt-5 px-4 sm:px-6 pb-16 lg:pb-4">
             <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
               Page {currentPage} of {totalPages} • {total} total candidates
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center justify-center sm:justify-end space-x-2">
+            <div className="flex items-center justify-center sm:justify-end space-x-1 sm:space-x-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => fetchCandidates(currentPage - 1)}
                 disabled={currentPage === 1 || loadingPage}
-                className="flex items-center space-x-1 text-xs"
+                className="flex items-center space-x-1 text-xs h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
               >
                 <span>←</span>
                 <span className="hidden sm:inline">Previous</span>
@@ -371,7 +394,7 @@ export const CandidateGrid = () => {
 
               <div className="flex items-center space-x-1">
                 {(() => {
-                  const maxVisible = window.innerWidth < 640 ? 3 : 5; // Show fewer pages on mobile
+                  const maxVisible = isMobile ? 3 : 5;
                   let startPage = 1;
                   let endPage = Math.min(maxVisible, totalPages);
 
@@ -393,7 +416,7 @@ export const CandidateGrid = () => {
 
                   return (
                     <>
-                      {startPage > 1 && window.innerWidth >= 640 && (
+                      {startPage > 1 && !isMobile && (
                         <>
                           <Button
                             variant="outline"
@@ -427,7 +450,7 @@ export const CandidateGrid = () => {
                         </Button>
                       ))}
 
-                      {endPage < totalPages && window.innerWidth >= 640 && (
+                      {endPage < totalPages && !isMobile && (
                         <>
                           {endPage < totalPages - 1 && (
                             <span className="text-muted-foreground px-1 sm:px-2 text-xs">
@@ -455,7 +478,7 @@ export const CandidateGrid = () => {
                 size="sm"
                 onClick={() => fetchCandidates(currentPage + 1)}
                 disabled={currentPage === totalPages || loadingPage}
-                className="flex items-center space-x-1 text-xs"
+                className="flex items-center space-x-1 text-xs h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
               >
                 <span className="hidden sm:inline">Next</span>
                 <span>→</span>
@@ -468,7 +491,7 @@ export const CandidateGrid = () => {
       {/* Show candidate count when no pagination */}
       {totalPages <= 1 && candidates.length > 0 && (
         <div className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 sm:pt-5 px-4 sm:px-6 pb-12 lg:pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 sm:pt-5 px-4 sm:px-6 pb-16 lg:pb-4">
             <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
               {total} total candidates
             </div>
