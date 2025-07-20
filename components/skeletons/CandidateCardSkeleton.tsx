@@ -69,8 +69,6 @@ export const CandidateCardSkeleton = () => {
                     <div className="flex flex-wrap gap-1">
                       <div className="h-5 w-16 bg-[#2a2a2a] rounded animate-pulse" />
                       <div className="h-5 w-20 bg-[#2a2a2a] rounded animate-pulse" />
-                      <div className="h-5 w-14 bg-[#2a2a2a] rounded animate-pulse" />
-                      <div className="h-5 w-18 bg-[#2a2a2a] rounded animate-pulse" />
                     </div>
                   </div>
 
@@ -148,8 +146,6 @@ export const CandidateCardSkeleton = () => {
                     <div className="h-5 w-20 bg-[#2a2a2a] rounded animate-pulse" />
                     <div className="h-5 w-14 bg-[#2a2a2a] rounded animate-pulse" />
                     <div className="h-5 w-18 bg-[#2a2a2a] rounded animate-pulse" />
-                    <div className="h-5 w-12 bg-[#2a2a2a] rounded animate-pulse" />
-                    <div className="h-5 w-16 bg-[#2a2a2a] rounded animate-pulse" />
                   </div>
                 </div>
 
