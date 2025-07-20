@@ -171,7 +171,7 @@ export const TeamSelectionModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
           onClick={onClose}
         >
           <motion.div
@@ -183,17 +183,17 @@ export const TeamSelectionModal = ({
             onClick={(e) => e.stopPropagation()}
           >
             <Card className="bg-card border-border shadow-xl">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Users className="h-6 w-6 text-primary" />
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="flex items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                      <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl text-foreground">
+                      <CardTitle className="text-lg sm:text-xl text-foreground">
                         Your Hiring Team is Complete! 🎯
                       </CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                         You&apos;ve selected {candidates.length} diverse
                         candidates for your team
                       </p>
@@ -203,14 +203,14 @@ export const TeamSelectionModal = ({
                     variant="ghost"
                     size="sm"
                     onClick={onClose}
-                    className="h-8 w-8 p-0"
+                    className="h-7 w-7 sm:h-8 sm:w-8 p-0 flex-shrink-0"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4">
                 {/* Success Animation */}
                 <motion.div
                   initial={{ scale: 0 }}
@@ -218,17 +218,17 @@ export const TeamSelectionModal = ({
                   transition={{ delay: 0.2, type: "spring" }}
                   className="flex justify-center"
                 >
-                  <div className="p-3 bg-green-500/10 rounded-full">
-                    <CheckCircle className="h-8 w-8 text-green-500" />
+                  <div className="p-2 sm:p-3 bg-green-500/10 rounded-full">
+                    <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
                   </div>
                 </motion.div>
 
                 {/* Candidate List Preview */}
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   <h4 className="text-sm font-semibold text-foreground">
                     Your Hiring Team:
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     {candidates.map((candidate, index) => (
                       <motion.div
                         key={candidate.email}
@@ -237,19 +237,19 @@ export const TeamSelectionModal = ({
                         transition={{ delay: 0.3 + index * 0.1 }}
                         className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
                       >
-                        <div className="flex items-center space-x-2">
-                          <div className="p-1 bg-primary/10 rounded-full">
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
+                          <div className="p-1 bg-primary/10 rounded-full flex-shrink-0">
                             <Users className="h-3 w-3 text-primary" />
                           </div>
-                          <span className="text-sm font-medium text-foreground">
+                          <span className="text-xs sm:text-sm font-medium text-foreground truncate">
                             {candidate.name ||
                               candidate.email ||
                               "Unknown Candidate"}
                           </span>
                         </div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
                           <MapPin className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground hidden sm:inline">
                             {candidate.location || candidate.email || "Unknown"}
                           </span>
                         </div>
@@ -265,13 +265,13 @@ export const TeamSelectionModal = ({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                     onSubmit={handleEmailSubmit}
-                    className="space-y-4"
+                    className="space-y-3 sm:space-y-4"
                   >
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground">
                         Share your hiring team report:
                       </label>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Input
                           type="email"
                           placeholder="Enter your email address"
@@ -283,7 +283,7 @@ export const TeamSelectionModal = ({
                         <Button
                           type="submit"
                           disabled={isLoading || !email || !isValidEmail(email)}
-                          className="flex items-center space-x-2"
+                          className="flex items-center justify-center space-x-2"
                         >
                           {isLoading ? (
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -304,7 +304,7 @@ export const TeamSelectionModal = ({
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-center space-y-2"
                   >
-                    <Mail className="h-8 w-8 text-green-500 mx-auto" />
+                    <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 mx-auto" />
                     <p className="text-sm text-foreground">
                       Hiring team report ready!
                     </p>
@@ -335,7 +335,7 @@ export const TeamSelectionModal = ({
                   <Button
                     variant="outline"
                     onClick={handlePDFExport}
-                    className="w-full flex items-center space-x-2"
+                    className="w-full flex items-center justify-center space-x-2"
                   >
                     <FileText className="h-4 w-4" />
                     <span>Download Hiring Report</span>

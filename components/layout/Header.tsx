@@ -16,32 +16,36 @@ const Header = () => {
 
   return (
     <header className="border-b border-border backdrop-blur-sm flex-shrink-0 w-full">
-      <div className="w-full px-6 py-3">
+      <div className="w-full px-4 sm:px-6 py-3">
         <div className="flex items-center justify-between w-full">
-          <div className="flex items-center space-x-4">
-            <Logo size="lg" />
-            <div className="space-y-1">
-              <h1 className="text-2xl font-bold text-foreground">Co-pilot</h1>
-              <p className="text-sm text-muted-foreground">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <Logo size="sm" className="sm:hidden" />
+            <Logo size="lg" className="hidden sm:block" />
+            <div className="space-y-0.5 sm:space-y-1">
+              <h1 className="text-lg sm:text-2xl font-bold text-foreground">
+                Co-pilot
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                 AI-powered candidate filtering and selection
               </p>
             </div>
           </div>
-          <div className="flex items-center px-6">
+          <div className="flex items-center">
             <Button
               size="sm"
               variant="outline"
               onClick={handleExportClick}
               disabled={shortlistedCandidates.length !== 5}
-              className="flex items-center space-x-2 h-9 px-3"
+              className="flex items-center space-x-1 sm:space-x-2 h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm"
               title={
                 shortlistedCandidates.length === 5
                   ? "Export your team data"
                   : "Select 5 candidates to export"
               }
             >
-              <FileText className="h-4 w-4" />
-              <span>Export PDF</span>
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Export PDF</span>
+              <span className="sm:hidden">Export</span>
             </Button>
           </div>
         </div>

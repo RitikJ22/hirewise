@@ -24,7 +24,18 @@ const Home = () => {
     isRightPanelExpanded,
     toggleLeftPanel,
     toggleRightPanel,
+    setLeftPanelExpanded,
+    setRightPanelExpanded,
   } = useAppStore();
+
+  // Initialize panel states after hydration (SSR-safe)
+  useEffect(() => {
+    const isDesktop = window.innerWidth >= 1024;
+    if (isDesktop) {
+      setLeftPanelExpanded(true);
+      setRightPanelExpanded(true);
+    }
+  }, [setLeftPanelExpanded, setRightPanelExpanded]);
 
   // Auto-open modal when 5 candidates are selected
   useEffect(() => {
@@ -41,7 +52,7 @@ const Home = () => {
       {/* Main Content */}
       <main className="flex-1 flex overflow-hidden">
         <div className="flex w-full relative">
-          {/* Filter Panel - Expandable */}
+          {/* Desktop: Filter Panel - Expandable Sidebar */}
           <AnimatePresence>
             {isLeftPanelExpanded && (
               <motion.div
@@ -49,7 +60,7 @@ const Home = () => {
                 animate={{ width: 320, opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="flex-shrink-0 border-r border-border bg-card overflow-hidden relative"
+                className="hidden lg:flex flex-shrink-0 border-r border-border bg-card overflow-hidden relative"
               >
                 <div
                   className="h-full overflow-y-auto p-6 scrollbar-hide"
@@ -79,7 +90,7 @@ const Home = () => {
             )}
           </AnimatePresence>
 
-          {/* Open button for left panel when collapsed */}
+          {/* Desktop: Open button for left panel when collapsed */}
           <AnimatePresence>
             {!isLeftPanelExpanded && (
               <motion.div
@@ -87,7 +98,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2, delay: 0.1 }}
-                className="flex items-center justify-center absolute top-2 left-0 z-40 bg-card border border-border w-3 h-6 cursor-pointer rounded-br-md rounded-tr-md border-l-0"
+                className="hidden lg:flex items-center justify-center absolute top-2 left-0 z-40 bg-card border border-border w-3 h-6 cursor-pointer rounded-br-md rounded-tr-md border-l-0"
                 onClick={toggleLeftPanel}
               >
                 <button
@@ -112,7 +123,7 @@ const Home = () => {
             <CandidateGrid />
           </motion.div>
 
-          {/* Open button for right panel when collapsed */}
+          {/* Desktop: Open button for right panel when collapsed */}
           <AnimatePresence>
             {!isRightPanelExpanded && (
               <motion.div
@@ -120,7 +131,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2, delay: 0.1 }}
-                className="flex items-center justify-center absolute top-2 right-0 z-40 bg-card border border-border w-3 h-6 cursor-pointer rounded-bl-md rounded-tl-md border-r-0"
+                className="hidden lg:flex items-center justify-center absolute top-2 right-0 z-40 bg-card border border-border w-3 h-6 cursor-pointer rounded-bl-md rounded-tl-md border-r-0"
                 onClick={toggleRightPanel}
               >
                 <button
@@ -133,7 +144,7 @@ const Home = () => {
             )}
           </AnimatePresence>
 
-          {/* Shortlist Panel - Expandable */}
+          {/* Desktop: Shortlist Panel - Expandable Sidebar */}
           <AnimatePresence>
             {isRightPanelExpanded && (
               <motion.div
@@ -141,7 +152,7 @@ const Home = () => {
                 animate={{ width: 320, opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="flex-shrink-0 border-l border-border bg-card overflow-hidden relative"
+                className="hidden lg:flex flex-shrink-0 border-l border-border bg-card overflow-hidden relative"
               >
                 <div
                   className="h-full overflow-y-auto p-6 scrollbar-hide"
@@ -172,6 +183,109 @@ const Home = () => {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Mobile/Tablet: Bottom Sheet for Filter Panel */}
+      <AnimatePresence>
+        {isLeftPanelExpanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            onClick={toggleLeftPanel}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="absolute bottom-0 left-0 right-0 bg-card border-t border-border rounded-t-xl max-h-[85vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Handle bar */}
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
+              </div>
+
+              {/* Panel content */}
+              <div
+                className="h-full overflow-y-auto scrollbar-hide"
+                style={{ maxHeight: "calc(85vh - 60px)" }}
+              >
+                <div className="p-4">
+                  <Suspense fallback={<FilterPanelSkeleton />}>
+                    <FilterPanel />
+                  </Suspense>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile/Tablet: Bottom Sheet for Shortlist Panel */}
+      <AnimatePresence>
+        {isRightPanelExpanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            onClick={toggleRightPanel}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="absolute bottom-0 left-0 right-0 bg-card border-t border-border rounded-t-xl max-h-[85vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Handle bar */}
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
+              </div>
+
+              {/* Panel content */}
+              <div
+                className="h-full overflow-y-auto scrollbar-hide"
+                style={{ maxHeight: "calc(85vh - 60px)" }}
+              >
+                <div className="p-4">
+                  <Suspense fallback={<ShortlistPanelSkeleton />}>
+                    <ShortlistPanel />
+                  </Suspense>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile/Tablet: Floating Action Buttons */}
+      <div className="lg:hidden fixed bottom-4 left-4 right-4 flex justify-between z-30">
+        {/* Filter Button */}
+        <Button
+          size="lg"
+          variant="default"
+          onClick={toggleLeftPanel}
+          className="flex items-center space-x-2 shadow-lg"
+        >
+          <Filter className="h-4 w-4" />
+          <span>Filters</span>
+        </Button>
+
+        {/* Shortlist Button */}
+        <Button
+          size="lg"
+          variant="outline"
+          onClick={toggleRightPanel}
+          className="flex items-center space-x-2 shadow-lg"
+        >
+          <Users className="h-4 w-4" />
+          <span>Shortlist ({shortlistedCandidates.length}/5)</span>
+        </Button>
+      </div>
 
       {/* Team Selection Modal */}
       <TeamSelectionModal

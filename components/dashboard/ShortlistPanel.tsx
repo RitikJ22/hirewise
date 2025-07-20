@@ -62,20 +62,22 @@ export const ShortlistPanel = () => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center space-x-2">
           <Users className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold text-foreground">Shortlist</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+            Shortlist
+          </h2>
         </div>
         {shortlistedCandidates.length > 0 && (
           <Button
             variant="outline"
             size="sm"
             onClick={handleClearShortlist}
-            className="text-destructive hover:text-destructive"
+            className="text-destructive hover:text-destructive w-full sm:w-auto"
           >
             <Trash2 className="h-4 w-4 mr-1" />
             Clear All
@@ -90,9 +92,9 @@ export const ShortlistPanel = () => {
       />
 
       {/* Shortlisted Candidates */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-foreground">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">
             Selected Candidates
           </h3>
           <Badge variant="secondary" className="bg-primary/20 text-primary">
@@ -106,19 +108,19 @@ export const ShortlistPanel = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center py-8"
+              className="text-center py-6 sm:py-8"
             >
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
+              <Users className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+              <p className="text-sm sm:text-base text-muted-foreground">
                 No candidates selected yet
               </p>
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                 Click the + button on candidate cards to add them to your
                 shortlist
               </p>
             </motion.div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <AnimatePresence>
                 {shortlistedCandidates.map((candidate, index) => (
                   <motion.div
@@ -129,12 +131,12 @@ export const ShortlistPanel = () => {
                     transition={{ duration: 0.2, delay: index * 0.05 }}
                   >
                     <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer">
-                      <CardContent className="p-4">
+                      <CardContent className="p-3 sm:p-4">
                         <div className="flex items-start justify-between">
                           <div className="space-y-2 flex-1 min-w-0">
                             <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              <h4 className="font-medium text-foreground truncate">
+                              <User className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                              <h4 className="font-medium text-foreground truncate text-sm sm:text-base">
                                 {candidate.name}
                               </h4>
                               {hasFilters &&
@@ -147,10 +149,10 @@ export const ShortlistPanel = () => {
                                   </Badge>
                                 )}
                             </div>
-                            <p className="text-sm text-muted-foreground truncate">
+                            <p className="text-xs sm:text-sm text-muted-foreground truncate">
                               {candidate.email}
                             </p>
-                            <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-muted-foreground">
                               <div className="flex items-center space-x-1 truncate">
                                 <MapPin className="h-3 w-3 flex-shrink-0" />
                                 <span>{candidate.location}</span>
@@ -169,10 +171,13 @@ export const ShortlistPanel = () => {
                                 candidate.name
                               )
                             }
-                            className="text-muted-foreground hover:text-destructive flex-shrink-0 ml-2"
+                            className="text-muted-foreground hover:text-destructive flex-shrink-0 ml-2 h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
                             title="Remove from shortlist"
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline ml-1">
+                              Remove
+                            </span>
                           </Button>
                         </div>
                       </CardContent>
