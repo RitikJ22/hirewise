@@ -1,6 +1,6 @@
 # HireWise Co-pilot
 
-A comprehensive AI-powered candidate filtering and selection platform designed to help recruiters build diverse teams of 5 candidates. Built with Next.js 15, TypeScript, Tailwind CSS, and Shadcn/UI.
+A comprehensive candidate filtering and selection platform designed to help recruiters build diverse teams of 5 candidates. Built with Next.js 15, TypeScript, Tailwind CSS, and Shadcn/UI.
 
 ## 🎯 Problem Statement
 
@@ -22,7 +22,7 @@ Create a full-stack application to help recruiters figure out who to hire. The p
 - **5-Candidate Selection**: Maximum team size with intelligent validation
 - **Real-time Team Analytics**: Average salary, experience, geographic diversity, top school graduates
 - **Skills Distribution**: Top skills analysis across the selected team
-- **Match Score Tracking**: AI-powered scoring when filters are applied
+- **Match Score Tracking**: Rule-based scoring when filters are applied
 
 ### 📊 **Comprehensive Reporting**
 - **Team Selection Modal**: Automatic modal when 5 candidates are selected
@@ -147,7 +147,7 @@ Fetches and filters candidate data with computed properties and match scoring.
 
 ## 🧮 Match Scoring Algorithm
 
-The match score is calculated based on applied filters:
+The match score is calculated based on applied filters using a weighted rule-based system:
 - **Skills Match (30%)**: Percentage of required skills found in candidate's skillset
 - **Work Availability (20%)**: Match with desired work schedule
 - **Location Match (15%)**: Geographic proximity or location match

@@ -26,7 +26,7 @@ const Header = () => {
                 Co-pilot
               </h1>
               <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                AI-powered candidate filtering and selection
+                Smart candidate filtering and selection
               </p>
             </div>
           </div>
